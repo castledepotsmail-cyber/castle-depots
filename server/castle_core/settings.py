@@ -54,7 +54,6 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -192,6 +191,15 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    "https://castle-depots.vercel.app",
+    "https://castle-depots-git-main-castledepotsmail-cybers-projects.vercel.app",
+    "https://castle-depots-castledepotsmail-cybers-projects.vercel.app",
+]
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

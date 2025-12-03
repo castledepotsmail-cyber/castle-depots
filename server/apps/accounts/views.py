@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -58,8 +59,12 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_exempt
 def google_auth(request):
     print(f"Google auth request data: {request.data}")
     serializer = GoogleAuthSerializer(data=request.data)
