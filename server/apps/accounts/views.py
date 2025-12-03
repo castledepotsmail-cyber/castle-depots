@@ -12,6 +12,25 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
+    
+    def create(self, request, *args, **kwargs):
+        print(f"Registration request data: {request.data}")
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = serializer.save()
+                print(f"User created successfully: {user.username}")
+                return Response({
+                    'message': 'User created successfully',
+                    'user': UserSerializer(user).data
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(f"Error creating user: {str(e)}")
+                return Response({
+                    'error': f'Error creating user: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Registration validation errors: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from rest_framework import viewsets, permissions
 from .models import Address
