@@ -85,21 +85,26 @@ WSGI_APPLICATION = 'castle_core.wsgi.application'
 
 if os.environ.get('DATABASE_URL'):
     # Manual parsing for Python 3.13 compatibility
-    import urllib.parse as urlparse
-    url = urlparse.urlparse(os.environ.get('DATABASE_URL'))
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': url.path[1:],
-            'USER': url.username,
-            'PASSWORD': url.password,
-            'HOST': url.hostname,
-            'PORT': url.port,
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
+    import re
+    db_url = os.environ.get('DATABASE_URL')
+    match = re.match(r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', db_url)
+    if match:
+        user, password, host, port, database = match.groups()
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': database,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': port,
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+            }
         }
-    }
+    else:
+        raise ValueError('Invalid DATABASE_URL format')
 else:
     DATABASES = {
         'default': {
