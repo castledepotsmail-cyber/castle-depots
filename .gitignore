@@ -54,3 +54,6 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Exceptions
+!client/src/lib/

@@ -1,6 +1,6 @@
-import api from '../lib/api';
+import api from '@/lib/api';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { auth, googleProvider } from '@/lib/firebase';
 import { useAuthStore } from '@/store/authStore';
 
 export const authService = {
@@ -9,7 +9,7 @@ export const authService = {
         if (response.data.access) {
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
-            
+
             // Get user data
             const userResponse = await api.get('/auth/me/');
             useAuthStore.getState().setUser(userResponse.data);
@@ -25,7 +25,7 @@ export const authService = {
     googleAuth: async () => {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
-        
+
         const response = await api.post('/auth/google-auth/', {
             google_id: user.uid,
             email: user.email,
@@ -33,7 +33,7 @@ export const authService = {
             last_name: user.displayName?.split(' ').slice(1).join(' ') || '',
             profile_picture: user.photoURL
         });
-        
+
         if (response.data.access) {
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
