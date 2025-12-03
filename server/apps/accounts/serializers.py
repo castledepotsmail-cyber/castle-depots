@@ -36,9 +36,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 class GoogleAuthSerializer(serializers.Serializer):
     google_id = serializers.CharField()
     email = serializers.EmailField()
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    profile_picture = serializers.URLField(required=False)
+    first_name = serializers.CharField(allow_blank=True, required=False)
+    last_name = serializers.CharField(allow_blank=True, required=False)
+    profile_picture = serializers.URLField(required=False, allow_null=True, allow_blank=True)
 
 from .models import Address
 

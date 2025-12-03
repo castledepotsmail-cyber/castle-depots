@@ -47,8 +47,8 @@ def google_auth(request):
     if serializer.is_valid():
         google_id = serializer.validated_data['google_id']
         email = serializer.validated_data['email']
-        first_name = serializer.validated_data['first_name']
-        last_name = serializer.validated_data['last_name']
+        first_name = serializer.validated_data.get('first_name', '')
+        last_name = serializer.validated_data.get('last_name', '')
         profile_picture = serializer.validated_data.get('profile_picture')
         
         user, created = User.objects.get_or_create(
