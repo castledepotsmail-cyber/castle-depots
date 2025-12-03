@@ -42,6 +42,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_auth(request):
+    print(f"Google auth request data: {request.data}")
     serializer = GoogleAuthSerializer(data=request.data)
     if serializer.is_valid():
         google_id = serializer.validated_data['google_id']
@@ -72,4 +73,5 @@ def google_auth(request):
             'refresh': str(refresh),
             'user': UserSerializer(user).data
         })
+    print(f"Serializer errors: {serializer.errors}")
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

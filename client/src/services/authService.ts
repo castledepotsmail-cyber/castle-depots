@@ -1,7 +1,7 @@
-import api from '@/lib/api';
+import api from '../lib/api';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
-import { useAuthStore } from '@/store/authStore';
+import { auth, googleProvider } from '../lib/firebase';
+import { useAuthStore } from '../store/authStore';
 
 export const authService = {
     login: async (username: string, password: string) => {
