@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import api from '../lib/api';
 
 export const orderService = {
     createOrder: async (orderData: any) => {
