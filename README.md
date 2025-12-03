@@ -36,7 +36,7 @@ A modern full-stack e-commerce platform built with Django REST Framework and Nex
 1. **Create Render Web Service:**
    - Connect GitHub repository
    - Root Directory: `server`
-   - Build Command: `./build.sh`
+   - Build Command: `pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate`
    - Start Command: `gunicorn castle_core.wsgi --log-file -`
 
 2. **Environment Variables (Render):**
