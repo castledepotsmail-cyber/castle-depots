@@ -10,6 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const links = [
         { href: "/admin", label: "Overview", icon: LayoutDashboard },
         { href: "/admin/products", label: "Products", icon: Package },
+        { href: "/admin/categories", label: "Categories", icon: Package }, // Reusing Package icon for now
         { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
         { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
         { href: "/admin/customers", label: "Customers", icon: Users },

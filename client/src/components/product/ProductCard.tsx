@@ -42,11 +42,18 @@ export default function ProductCard({ product }: ProductCardProps) {
             </button>
 
             {/* Image Area */}
-            <Link href={`/product/${product.id}`} className="h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-50">
-                    {/* Placeholder for actual image */}
-                    <span className="text-xs text-gray-400">Image: {product.name}</span>
-                </div>
+            <Link href={`/product/${product.id}`} className="h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden block">
+                {product.image ? (
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-50">
+                        <span className="text-xs text-gray-400">No Image</span>
+                    </div>
+                )}
             </Link>
 
             {/* Content */}

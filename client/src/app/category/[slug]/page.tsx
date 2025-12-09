@@ -25,7 +25,7 @@ export default function CategoryPage() {
                 // In a real app, we'd pass the category slug to the API
                 // For now, we'll fetch all and filter client-side or just show all if API doesn't support filter yet
                 // Ideally: const data = await productService.getProducts({ category: slug });
-                const data = await productService.getProducts({ category: slug });
+                const data = await productService.getProducts({ category__slug: slug });
                 const items = Array.isArray(data) ? data : (data.results || []);
                 setProducts(items);
             } catch (error) {

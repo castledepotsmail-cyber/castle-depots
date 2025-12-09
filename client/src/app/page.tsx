@@ -1,10 +1,47 @@
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import CampaignBanner from "@/components/campaign/CampaignBanner";
+import { useEffect, useState } from "react";
+import { productService } from "@/services/productService";
+import { Product } from "@/store/cartStore";
+import { useCartStore } from "@/store/cartStore";
 
 export default function Home() {
+  const [topDeals, setTopDeals] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const addItem = useCartStore((state) => state.addItem);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dealsData = await productService.getProducts({ on_sale: 'true', ordering: '-created_at' });
+        if (Array.isArray(dealsData)) {
+          setTopDeals(dealsData.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("Failed to fetch top deals", error);
+      }
+
+      try {
+        const catsData = await productService.getCategories();
+        console.log("Categories Data:", catsData);
+        if (Array.isArray(catsData)) {
+          setCategories(catsData.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <CampaignBanner />
@@ -64,20 +101,19 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <h2 className="font-display text-3xl font-bold mb-10 text-center text-gray-800">Shop by Category</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { name: 'Kitchenware', image: '/images/cat_kitchenware.png', slug: 'kitchenware' },
-                { name: 'Fashion', image: '/images/cat_fashion.png', slug: 'fashion' },
-                { name: 'Catering', image: '/images/cat_catering.png', slug: 'catering' },
-                { name: 'Electronics', image: '/images/cat_electronics.png', slug: 'electronics' }
-              ].map((cat) => (
+              {loading ? (
+                <div className="col-span-4 flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue"></div>
+                </div>
+              ) : categories.length > 0 ? categories.map((cat) => (
                 <Link
-                  key={cat.name}
+                  key={cat.id}
                   href={`/category/${cat.slug}`}
                   className="group relative h-64 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="absolute inset-0">
                     <img
-                      src={cat.image}
+                      src={cat.image || '/images/placeholder_cat.png'}
                       alt={cat.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -91,7 +127,9 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              ))}
+              )) : (
+                <div className="col-span-4 text-center text-gray-500 py-12">No categories found.</div>
+              )}
             </div>
           </div>
         </section>
@@ -124,37 +162,54 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((item, index) => (
-              <div key={item} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-shadow border border-gray-100 flex flex-col relative">
-                <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded absolute top-4 left-4 z-10">15% OFF</div>
-                <div className="h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden group">
+            {topDeals.map((product) => (
+              <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-shadow border border-gray-100 flex flex-col relative">
+                {product.discountPrice && (
+                  <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded absolute top-4 left-4 z-10">
+                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                  </div>
+                )}
+                <Link href={`/product/${product.id}`} className="h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden group">
                   <img
-                    src={
-                      index === 0 ? "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600" :
-                        index === 1 ? "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=600" :
-                          index === 2 ? "https://images.unsplash.com/photo-1576158187578-580f234a58f5?auto=format&fit=crop&q=80&w=600" :
-                            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600"
-                    }
-                    alt="Product"
+                    src={product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
+                    alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2">
-                  {index === 0 ? "Premium Gold Chafing Dish 8L" :
-                    index === 1 ? "Ladies High-Waist Mummy Jeans" :
-                      index === 2 ? "Stainless Steel Tea Urn" : "Audio Technica Headphones"}
-                </h3>
+                </Link>
+                <Link href={`/product/${product.id}`}>
+                  <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 hover:text-brand-blue transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
                 <div className="mt-auto pt-2">
-                  <p className="text-xs text-gray-400 line-through">KES {30000 - (index * 2000)}</p>
-                  <div className="flex justify-between items-center">
-                    <p className="text-lg font-bold text-brand-blue">KES {25000 - (index * 2000)}</p>
-                    <button className="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-colors">
-                      +
-                    </button>
-                  </div>
+                  {product.discountPrice ? (
+                    <div className="flex flex-col">
+                      <p className="text-xs text-gray-400 line-through">KES {product.price.toLocaleString()}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-lg font-bold text-brand-blue">KES {product.discountPrice.toLocaleString()}</p>
+                        <button
+                          onClick={() => addItem(product)}
+                          className="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-colors">
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <p className="text-lg font-bold text-brand-blue">KES {product.price.toLocaleString()}</p>
+                      <button
+                        onClick={() => addItem(product)}
+                        className="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-colors">
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
+            {topDeals.length === 0 && (
+              <div className="col-span-4 text-center text-gray-500 py-12">No deals found at the moment.</div>
+            )}
           </div>
         </section>
       </main>
