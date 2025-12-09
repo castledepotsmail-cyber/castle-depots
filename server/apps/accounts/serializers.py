@@ -40,6 +40,20 @@ class GoogleAuthSerializer(serializers.Serializer):
     last_name = serializers.CharField(allow_blank=True, required=False)
     profile_picture = serializers.URLField(required=False, allow_null=True, allow_blank=True)
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+    confirm_password = serializers.CharField(min_length=8)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError("Passwords don't match")
+        return attrs
+
 from .models import Address
 
 class AddressSerializer(serializers.ModelSerializer):

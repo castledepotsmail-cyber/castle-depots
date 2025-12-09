@@ -6,18 +6,25 @@ import { Mail, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
+import { authService } from "@/services/authService";
+
 export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
+    const [email, setEmail] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            await authService.requestPasswordReset(email);
             setSent(true);
-        }, 2000);
+        } catch (error) {
+            console.error("Failed to send reset link", error);
+            alert("Failed to send reset link. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -62,6 +69,8 @@ export default function ForgotPasswordPage() {
                                     <input
                                         type="email"
                                         required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                                         placeholder="you@example.com"
                                     />

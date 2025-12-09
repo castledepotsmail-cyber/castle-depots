@@ -3,10 +3,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, UserSerializer, GoogleAuthSerializer
+from .serializers import RegisterSerializer, UserSerializer, GoogleAuthSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 User = get_user_model()
 
@@ -33,6 +36,54 @@ class RegisterView(generics.CreateAPIView):
                     'error': f'Error creating user: {str(e)}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         print(f"Registration validation errors: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetRequestView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = User.objects.get(email=email)
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                
+                # In a real app, send email here. For now, we'll print to console.
+                reset_link = f"http://localhost:3000/auth/reset-password?uid={uid}&token={token}"
+                print(f"PASSWORD RESET LINK for {email}: {reset_link}")
+                
+                return Response({'message': 'Password reset link sent to email (check console)'}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                # Don't reveal user existence
+                return Response({'message': 'Password reset link sent to email (check console)'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            uid = serializer.validated_data['uid']
+            token = serializer.validated_data['token']
+            new_password = serializer.validated_data['new_password']
+            
+            try:
+                uid_decoded = force_str(urlsafe_base64_decode(uid))
+                user = User.objects.get(pk=uid_decoded)
+                
+                if default_token_generator.check_token(user, token):
+                    user.set_password(new_password)
+                    user.save()
+                    return Response({'message': 'Password reset successfully'}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from rest_framework import viewsets, permissions

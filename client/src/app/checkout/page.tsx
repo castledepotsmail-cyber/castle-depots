@@ -8,6 +8,7 @@ import { CheckCircle, CreditCard, Truck } from "lucide-react";
 import Link from "next/link";
 
 import { orderService } from "@/services/orderService";
+import { usePaystackPayment } from 'react-paystack';
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
@@ -30,6 +31,14 @@ export default function CheckoutPage() {
     };
 
     const handlePayment = async () => {
+        if (formData.paymentMethod === 'paystack') {
+            handlePaystackPayment();
+        } else {
+            await processOrder();
+        }
+    };
+
+    const processOrder = async (reference?: string) => {
         setLoading(true);
         try {
             const orderData = {
@@ -39,13 +48,12 @@ export default function CheckoutPage() {
                 items: items.map(item => ({
                     product_id: item.id,
                     quantity: item.quantity
-                }))
+                })),
+                paystack_ref: reference,
+                is_paid: !!reference
             };
 
             await orderService.createOrder(orderData);
-
-            // In a real app, we'd handle Paystack redirect here if needed
-            // For now, assume success or Pay on Delivery
             setStep(3);
             clearCart();
         } catch (error) {
@@ -54,6 +62,28 @@ export default function CheckoutPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const config = {
+        reference: (new Date()).getTime().toString(),
+        email: formData.email,
+        amount: total * 100, // Paystack expects amount in kobo/cents
+        currency: 'KES',
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462',
+    };
+
+    const initializePayment = usePaystackPayment(config);
+
+    const handlePaystackPayment = () => {
+        // @ts-ignore
+        initializePayment({
+            onSuccess: (reference: any) => {
+                processOrder(reference.reference);
+            },
+            onClose: () => {
+                alert("Payment cancelled.");
+            }
+        });
     };
 
     if (items.length === 0 && step !== 3) {
