@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: castle-depots-backend
+    env: python
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn castle_core.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+    root: server
