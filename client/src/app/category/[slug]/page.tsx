@@ -31,6 +31,7 @@ export default function CategoryPage() {
                 ]);
 
                 setCategory(categoryData);
+                console.log("Category Data:", categoryData); // Debug log
                 const items = Array.isArray(productsData) ? productsData : (productsData.results || []);
                 setProducts(items);
             } catch (error) {
@@ -74,11 +75,26 @@ export default function CategoryPage() {
             </div>
 
             <main className="container mx-auto px-4 py-12 flex-grow">
-                <div className="flex justify-between items-center mb-8">
-                    <p className="text-gray-500">Showing {products.length} results</p>
-                    <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-brand-blue transition-colors text-sm font-semibold text-gray-700 shadow-sm">
-                        <Filter size={16} /> Filter
-                    </button>
+                {/* Breadcrumb */}
+                <div className="text-sm text-gray-500 mb-6">
+                    <a href="/" className="hover:text-brand-blue">Home</a> / <a href="/shop" className="hover:text-brand-blue">Shop</a> / <span className="text-gray-900 font-semibold">{categoryName}</span>
+                </div>
+
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-gray-600 font-medium">Showing {products.length} results</p>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-500">Sort by:</span>
+                        <select className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block p-2.5 outline-none">
+                            <option>Most Popular</option>
+                            <option>Newest Arrivals</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                        <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-brand-blue transition-colors text-sm font-semibold text-gray-700 shadow-sm ml-2">
+                            <Filter size={16} /> Filter
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
