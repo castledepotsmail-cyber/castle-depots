@@ -114,10 +114,13 @@ export default function ProductDetailsPage() {
                                     {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
                                 </div>
                             )}
-                            <img
+                            <Image
                                 src={product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                priority
                             />
                         </div>
                     </div>
