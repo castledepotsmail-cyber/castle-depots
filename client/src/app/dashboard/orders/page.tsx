@@ -60,14 +60,7 @@ export default function OrdersPage() {
 
             <div className="space-y-4">
                 {orders.map((order) => {
-                    console.log('Order Debug:', {
-                        id: order.id,
-                        status: order.status,
-                        is_paid: order.is_paid,
-                        payment_method: order.payment_method,
-                        needsPayment: order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery'
-                    });
-                    const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery';
+                    const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pod';
 
                     return (
                         <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

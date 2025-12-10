@@ -66,14 +66,7 @@ export default function OrderDetailsPage() {
     };
 
     const currentStep = getStepStatus(order.status);
-    console.log('Order Details Debug:', {
-        id: order.id,
-        status: order.status,
-        is_paid: order.is_paid,
-        payment_method: order.payment_method,
-        needsPayment: order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery'
-    });
-    const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery';
+    const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pod';
     const canDownloadReceipt = order.status === 'delivered' && order.is_paid;
 
     const trackingSteps = [
