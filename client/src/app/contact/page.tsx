@@ -2,9 +2,40 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Loader2, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import api from "@/lib/api";
 
 export default function ContactPage() {
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        message: ""
+    });
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await api.post('/communication/contact/', {
+                name: `${formData.firstName} ${formData.lastName}`,
+                email: formData.email,
+                subject: "Contact Form Submission",
+                message: formData.message
+            });
+            setSuccess(true);
+            setFormData({ firstName: "", lastName: "", email: "", message: "" });
+        } catch (error) {
+            console.error("Failed to send message", error);
+            alert("Failed to send message. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
@@ -55,32 +86,75 @@ export default function ContactPage() {
 
                         {/* Contact Form */}
                         <div className="md:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">First Name</label>
-                                        <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue" placeholder="John" />
+                            {success ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CheckCircle size={32} />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Last Name</label>
-                                        <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue" placeholder="Doe" />
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-2">Message Sent!</h3>
+                                    <p className="text-gray-600 mb-6">Thank you for contacting us. We'll get back to you shortly.</p>
+                                    <button onClick={() => setSuccess(false)} className="text-brand-blue font-bold hover:underline">Send another message</button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">First Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.firstName}
+                                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue"
+                                                placeholder="John"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Last Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.lastName}
+                                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue"
+                                                placeholder="Doe"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-                                    <input type="email" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue" placeholder="you@example.com" />
-                                </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue"
+                                            placeholder="you@example.com"
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Message</label>
-                                    <textarea className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue h-32" placeholder="How can we help you?"></textarea>
-                                </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Message</label>
+                                        <textarea
+                                            required
+                                            value={formData.message}
+                                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue h-32"
+                                            placeholder="How can we help you?"
+                                        ></textarea>
+                                    </div>
 
-                                <button className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg">
-                                    <Send size={20} /> Send Message
-                                </button>
-                            </form>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                                    >
+                                        {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                                        {loading ? "Sending..." : "Send Message"}
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>

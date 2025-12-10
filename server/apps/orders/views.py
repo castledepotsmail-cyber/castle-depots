@@ -44,3 +44,13 @@ class AdminStatsView(APIView):
             'total_products': total_products,
             'recent_orders': recent_orders
         })
+
+class TrackOrderView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            return Response(OrderSerializer(order).data)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=404)

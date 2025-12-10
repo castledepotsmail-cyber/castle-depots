@@ -13,3 +13,15 @@ class NotificationViewSet(viewsets.ModelViewSet):
         # Users shouldn't create notifications, but if they do, it's for themselves?
         # Typically notifications are system generated.
         serializer.save(user=self.request.user)
+
+from .models import ContactMessage
+from .serializers import ContactMessageSerializer
+
+class ContactMessageViewSet(viewsets.ModelViewSet):
+    queryset = ContactMessage.objects.all().order_by('-created_at')
+    serializer_class = ContactMessageSerializer
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
