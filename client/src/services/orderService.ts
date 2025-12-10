@@ -14,5 +14,13 @@ export const orderService = {
     getOrder: async (id: string) => {
         const response = await api.get(`/orders/${id}/`);
         return response.data;
+    },
+
+    updateOrderPayment: async (id: string, paystackRef: string) => {
+        const response = await api.patch(`/orders/${id}/`, {
+            is_paid: true,
+            paystack_ref: paystackRef
+        });
+        return response.data;
     }
 };

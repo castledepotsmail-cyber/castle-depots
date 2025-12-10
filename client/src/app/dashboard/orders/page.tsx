@@ -1,13 +1,16 @@
 "use client";
 
-import { Package, ChevronRight } from "lucide-react";
+import { Package, ChevronRight, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
+import { PaystackButton } from "react-paystack";
+import { useAuthStore } from "@/store/authStore";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -22,6 +25,20 @@ export default function OrdersPage() {
         };
         fetchOrders();
     }, []);
+
+    const handlePaymentSuccess = async (reference: any, orderId: string) => {
+        try {
+            // Update order as paid
+            await orderService.updateOrderPayment(orderId, reference.reference);
+            // Refresh orders
+            const data = await orderService.getOrders();
+            setOrders(data);
+            alert("Payment successful! Your order is now paid.");
+        } catch (error) {
+            console.error("Payment update failed", error);
+            alert("Payment received but failed to update order. Please contact support.");
+        }
+    };
 
     if (loading) {
         return <div className="text-center py-8">Loading orders...</div>;
@@ -42,39 +59,63 @@ export default function OrdersPage() {
             <h1 className="font-display text-2xl font-bold text-gray-800">My Orders</h1>
 
             <div className="space-y-4">
-                {orders.map((order) => (
-                    <Link href={`/dashboard/orders/${order.id}`} key={order.id} className="block bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-50 text-brand-blue p-3 rounded-full">
-                                    <Package size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}...</h3>
-                                    <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
-                                </div>
-                            </div>
+                {orders.map((order) => {
+                    const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery';
 
-                            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 w-full md:w-auto">
-                                <div className="text-right">
-                                    <p className="font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</p>
-                                    <p className="text-sm text-gray-500">{order.items?.length || 0} items</p>
-                                </div>
+                    return (
+                        <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <Link href={`/dashboard/orders/${order.id}`} className="block hover:opacity-80 transition-opacity">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-blue-50 text-brand-blue p-3 rounded-full">
+                                            <Package size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}...</h3>
+                                            <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
 
-                                <div className="flex items-center justify-between w-full md:w-auto gap-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                        order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
-                                            order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                'bg-blue-100 text-blue-700'
-                                        }`}>
-                                        {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
-                                    </span>
-                                    <ChevronRight className="text-gray-400 group-hover:text-brand-blue transition-colors" />
+                                    <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 w-full md:w-auto">
+                                        <div className="text-right">
+                                            <p className="font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</p>
+                                            <p className="text-sm text-gray-500">{order.items?.length || 0} items</p>
+                                        </div>
+
+                                        <div className="flex items-center gap-4">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                                                order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
+                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                        'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
+                                            </span>
+                                            <ChevronRight className="text-gray-400" />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            </Link>
+
+                            {needsPayment && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                    <p className="text-sm text-orange-600 font-medium">
+                                        <span className="inline-block w-2 h-2 bg-orange-600 rounded-full mr-2"></span>
+                                        Payment pending - Please complete your payment
+                                    </p>
+                                    <PaystackButton
+                                        email={user?.email || ''}
+                                        amount={Math.round(parseFloat(order.total_amount) * 100)}
+                                        publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
+                                        text="Pay Now"
+                                        onSuccess={(reference) => handlePaymentSuccess(reference, order.id)}
+                                        onClose={() => console.log("Payment closed")}
+                                        className="bg-brand-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    />
+                                </div>
+                            )}
                         </div>
-                    </Link>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
