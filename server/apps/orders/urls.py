@@ -11,5 +11,4 @@ urlpatterns = [
     path('track/<uuid:pk>/', TrackOrderView.as_view(), name='track-order'),
     path('', include(router.urls)),
 ]
-    path('', include(router.urls)),
-]
+
