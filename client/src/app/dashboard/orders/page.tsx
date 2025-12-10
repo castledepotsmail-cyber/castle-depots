@@ -4,7 +4,7 @@ import { Package, ChevronRight, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
-import { PaystackButton } from "react-paystack";
+import PaystackPaymentButton from "@/components/common/PaystackPaymentButton";
 import { useAuthStore } from "@/store/authStore";
 
 export default function OrdersPage() {
@@ -102,7 +102,7 @@ export default function OrdersPage() {
                                         <span className="inline-block w-2 h-2 bg-orange-600 rounded-full mr-2"></span>
                                         Payment pending - Please complete your payment
                                     </p>
-                                    <PaystackButton
+                                    <PaystackPaymentButton
                                         email={user?.email || ''}
                                         amount={Math.round(parseFloat(order.total_amount) * 100)}
                                         publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}

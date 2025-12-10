@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
 import Image from "next/image";
-import { PaystackButton } from "react-paystack";
+import PaystackPaymentButton from "@/components/common/PaystackPaymentButton";
 import { useAuthStore } from "@/store/authStore";
 
 export default function OrderDetailsPage() {
@@ -126,7 +126,7 @@ export default function OrderDetailsPage() {
                                     <p className="text-sm text-orange-700">Your order has been delivered. Please complete your payment.</p>
                                 </div>
                             </div>
-                            <PaystackButton
+                            <PaystackPaymentButton
                                 email={user?.email || ''}
                                 amount={Math.round(parseFloat(order.total_amount) * 100)}
                                 publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
