@@ -9,6 +9,8 @@ interface User {
     last_name: string;
     phone_number?: string;
     profile_picture?: string;
+    is_staff?: boolean;
+    is_superuser?: boolean;
 }
 
 interface AuthState {
