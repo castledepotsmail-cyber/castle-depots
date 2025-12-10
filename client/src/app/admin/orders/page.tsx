@@ -1,8 +1,53 @@
 "use client";
 
-import { Search, Filter, Eye, MoreVertical } from "lucide-react";
+import { Search, Filter, Eye, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { adminService } from "@/services/adminService";
+import Link from "next/link";
 
 export default function AdminOrdersPage() {
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("All");
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const fetchOrders = async () => {
+        try {
+            const data = await adminService.getOrders();
+            setOrders(data.results || data);
+        } catch (error) {
+            console.error("Failed to fetch orders", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStatusChange = async (orderId: string, newStatus: string) => {
+        try {
+            await adminService.updateOrderStatus(orderId, newStatus);
+            setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+            alert("Order status updated!");
+        } catch (error) {
+            console.error("Failed to update status", error);
+            alert("Failed to update status.");
+        }
+    };
+
+    const filteredOrders = orders.filter(order => {
+        const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (order.user && order.user.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesStatus = statusFilter === "All" || order.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    if (loading) {
+        return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto text-brand-blue" /></div>;
+    }
+
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
@@ -11,17 +56,26 @@ export default function AdminOrdersPage() {
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4">
                 <div className="flex-grow relative text-gray-500">
                     <Search className="absolute top-3 left-3" size={20} />
-                    <input type="text" placeholder="Search orders..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                    <input
+                        type="text"
+                        placeholder="Search orders by ID or User..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                    />
                 </div>
-                <select className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue text-gray-700">
-                    <option>Status: All</option>
-                    <option>Processing</option>
-                    <option>Shipped</option>
-                    <option>Delivered</option>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue text-gray-700"
+                >
+                    <option value="All">Status: All</option>
+                    <option value="placed">Placed</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center gap-2">
-                    <Filter size={18} /> More Filters
-                </button>
             </div>
 
             {/* Orders Table */}
@@ -39,30 +93,39 @@ export default function AdminOrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-gray-900">#CD-882{i}</td>
+                        {filteredOrders.map((order) => (
+                            <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
                                 <td className="px-6 py-4">
-                                    <p className="font-bold text-gray-800">John Doe</p>
-                                    <p className="text-xs text-gray-500">john@example.com</p>
+                                    <p className="font-bold text-gray-800">{order.user || 'Guest'}</p>
                                 </td>
-                                <td className="px-6 py-4 text-gray-500">Nov 29, 2025</td>
-                                <td className="px-6 py-4 font-bold text-gray-900">KES 12,500</td>
+                                <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
                                 <td className="px-6 py-4">
-                                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Paid</span>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${order.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                        {order.payment_method === 'pod' ? 'POD' : (order.is_paid ? 'Paid' : 'Pending')}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <select className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue">
-                                        <option>Processing</option>
-                                        <option>Shipped</option>
-                                        <option>Delivered</option>
-                                        <option>Cancelled</option>
+                                    <select
+                                        value={order.status}
+                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                        className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
+                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                    'bg-blue-50 text-blue-700'
+                                            }`}
+                                    >
+                                        <option value="placed">Placed</option>
+                                        <option value="processing">Processing</option>
+                                        <option value="shipped">Shipped</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="cancelled">Cancelled</option>
                                     </select>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                                    <Link href={`/dashboard/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
                                         <Eye size={18} />
-                                    </button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}
