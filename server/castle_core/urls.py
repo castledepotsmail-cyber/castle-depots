@@ -18,4 +18,13 @@ urlpatterns = [
     path('api/orders/', include('apps.orders.urls')),
     path('api/communication/', include('apps.communication.urls')),
     path('api/campaigns/', include('apps.campaigns.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/campaigns/', include('apps.campaigns.urls')),
+]
+
+# Force serve media files in production (not recommended for high traffic, but fine for prototype)
+from django.views.static import serve
+from django.urls import re_path
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
