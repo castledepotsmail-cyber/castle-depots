@@ -1,6 +1,3 @@
-import jsPDF from 'jspdf';
-import QRCode from 'qrcode';
-
 interface OrderItem {
     product: {
         name: string;
@@ -22,6 +19,10 @@ interface Order {
 }
 
 export const generateReceipt = async (order: Order) => {
+    // Dynamic imports to avoid SSR issues
+    const jsPDF = (await import('jspdf')).default;
+    const QRCode = await import('qrcode');
+
     const pdf = new jsPDF();
 
     // Generate QR Code
