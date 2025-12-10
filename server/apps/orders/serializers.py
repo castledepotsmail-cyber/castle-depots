@@ -18,7 +18,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'user', 'status', 'payment_method', 'total_amount', 'delivery_address', 'items', 'created_at', 'paystack_ref', 'is_paid']
-        read_only_fields = ['user', 'status', 'created_at']
+        read_only_fields = ['user', 'created_at']
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
@@ -40,3 +40,14 @@ class OrderSerializer(serializers.ModelSerializer):
             import traceback
             traceback.print_exc()
             raise serializers.ValidationError(f"Error creating order: {str(e)}")
+    
+    def update(self, instance, validated_data):
+        # Remove items from validated_data if present (we don't update items)
+        validated_data.pop('items', None)
+        
+        # Update allowed fields
+        instance.status = validated_data.get('status', instance.status)
+        instance.is_paid = validated_data.get('is_paid', instance.is_paid)
+        instance.save()
+        
+        return instance
