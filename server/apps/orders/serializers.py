@@ -22,10 +22,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-        user = self.context['request'].user
         
         try:
-            order = Order.objects.create(user=user, **validated_data)
+            # user is already in validated_data because it's passed in perform_create via serializer.save(user=...)
+            order = Order.objects.create(**validated_data)
             
             for item_data in items_data:
                 # We should probably validate product existence and price here or in view
