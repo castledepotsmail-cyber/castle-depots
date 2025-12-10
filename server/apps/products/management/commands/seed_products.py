@@ -107,7 +107,9 @@ class Command(BaseCommand):
                         allow_pod=True
                     )
 
-                    product.image_main = f"/images/{prod_data['image_name']}"
+                    # Vercel Blob URLs
+                    blob_base_url = "https://32vzkt6aqmhvgt9v.public.blob.vercel-storage.com/seed/"
+                    product.image_main = f"{blob_base_url}{prod_data['image_name']}"
                     product.save()
                 
                 except Category.DoesNotExist:
