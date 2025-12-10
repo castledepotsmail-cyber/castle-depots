@@ -8,13 +8,16 @@ import { CheckCircle, CreditCard, Truck } from "lucide-react";
 import Link from "next/link";
 
 import { orderService } from "@/services/orderService";
-import { usePaystackPayment } from 'react-paystack';
+import dynamic from "next/dynamic";
+
+const PaystackHandler = dynamic(() => import("@/components/checkout/PaystackHandler"), { ssr: false });
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
     const total = totalPrice();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [showPaystack, setShowPaystack] = useState(false);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -32,7 +35,7 @@ export default function CheckoutPage() {
 
     const handlePayment = async () => {
         if (formData.paymentMethod === 'paystack') {
-            handlePaystackPayment();
+            setShowPaystack(true);
         } else {
             await processOrder();
         }
@@ -77,20 +80,6 @@ export default function CheckoutPage() {
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462',
     };
 
-    const initializePayment = usePaystackPayment(config);
-
-    const handlePaystackPayment = () => {
-        // @ts-ignore
-        initializePayment({
-            onSuccess: (reference: any) => {
-                processOrder(reference.reference);
-            },
-            onClose: () => {
-                alert("Payment cancelled.");
-            }
-        });
-    };
-
     if (items.length === 0 && step !== 3) {
         // ... (empty cart view)
         return (
@@ -111,6 +100,20 @@ export default function CheckoutPage() {
 
             <main className="container mx-auto px-4 py-8 flex-grow">
                 <h1 className="font-display text-3xl font-bold text-gray-800 mb-8 text-center">Checkout</h1>
+
+                {showPaystack && (
+                    <PaystackHandler
+                        config={config}
+                        onSuccess={(reference: any) => {
+                            setShowPaystack(false);
+                            processOrder(reference.reference);
+                        }}
+                        onClose={() => {
+                            setShowPaystack(false);
+                            alert("Payment cancelled.");
+                        }}
+                    />
+                )}
 
                 {step === 3 ? (
                     <div className="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg text-center">
