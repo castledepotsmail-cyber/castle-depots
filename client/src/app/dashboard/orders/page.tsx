@@ -1,11 +1,12 @@
 "use client";
 
-import { Package, ChevronRight, CreditCard } from "lucide-react";
+import { Package, ChevronRight, CreditCard, Download } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
 import { PaystackButton } from "react-paystack";
 import { useAuthStore } from "@/store/authStore";
+import { generateReceipt } from "@/utils/receiptGenerator";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -111,6 +112,25 @@ export default function OrdersPage() {
                                         onClose={() => console.log("Payment closed")}
                                         className="bg-brand-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
                                     />
+                                </div>
+                            )}
+
+                            {order.status === 'delivered' && order.is_paid && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                    <p className="text-sm text-green-600 font-medium flex items-center gap-2">
+                                        <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+                                        Order completed and paid
+                                    </p>
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            generateReceipt(order);
+                                        }}
+                                        className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Download size={16} />
+                                        Download Receipt
+                                    </button>
                                 </div>
                             )}
                         </div>

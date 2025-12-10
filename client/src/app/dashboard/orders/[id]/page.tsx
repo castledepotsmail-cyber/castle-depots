@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Package, Truck, MapPin, ArrowLeft, Loader2, CreditCard } from "lucide-react";
+import { CheckCircle, Package, Truck, MapPin, ArrowLeft, Loader2, CreditCard, Download } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { orderService } from "@/services/orderService";
 import Image from "next/image";
 import { PaystackButton } from "react-paystack";
 import { useAuthStore } from "@/store/authStore";
+import { generateReceipt } from "@/utils/receiptGenerator";
 
 export default function OrderDetailsPage() {
     const params = useParams();
@@ -67,6 +68,7 @@ export default function OrderDetailsPage() {
 
     const currentStep = getStepStatus(order.status);
     const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pay_on_delivery';
+    const canDownloadReceipt = order.status === 'delivered' && order.is_paid;
 
     const trackingSteps = [
         { label: "Order Placed", icon: Package, step: 1 },
@@ -87,13 +89,24 @@ export default function OrderDetailsPage() {
                         <h1 className="font-display text-2xl font-bold text-gray-800">Order #{order.id.slice(0, 8)}...</h1>
                         <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                        order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
-                            order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                'bg-blue-100 text-blue-700'
-                        }`}>
-                        {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                            order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                    'bg-blue-100 text-blue-700'
+                            }`}>
+                            {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
+                        </span>
+                        {canDownloadReceipt && (
+                            <button
+                                onClick={() => generateReceipt(order)}
+                                className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
+                            >
+                                <Download size={18} />
+                                Download Receipt
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Payment Alert for POD */}
