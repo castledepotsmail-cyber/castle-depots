@@ -7,10 +7,14 @@ import { Filter, ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { productService } from "@/services/productService";
 import { Product } from "@/store/cartStore";
+import { useSearchParams } from "next/navigation";
 
 
 
 export default function ShopPage() {
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
+
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +40,7 @@ export default function ShopPage() {
                 if (selectedCategory) params.category__slug = selectedCategory;
                 if (minPrice) params.price__gte = minPrice;
                 if (maxPrice) params.price__lte = maxPrice;
+                if (searchQuery) params.search = searchQuery;
 
                 const data = await productService.getProducts(params);
                 const items = Array.isArray(data) ? data : (data.results || []);
@@ -47,8 +52,9 @@ export default function ShopPage() {
             }
         };
 
+
         fetchProducts();
-    }, [selectedCategory, minPrice, maxPrice, sortBy]);
+    }, [selectedCategory, minPrice, maxPrice, sortBy, searchQuery]);
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -58,7 +64,9 @@ export default function ShopPage() {
                 {/* Header & Filters */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <div>
-                        <h1 className="font-display text-3xl font-bold text-gray-800">Shop All Products</h1>
+                        <h1 className="font-display text-3xl font-bold text-gray-800">
+                            {searchQuery ? `Search Results for "${searchQuery}"` : 'Shop All Products'}
+                        </h1>
                         <p className="text-gray-500 text-sm">Showing {products.length} results</p>
                     </div>
 

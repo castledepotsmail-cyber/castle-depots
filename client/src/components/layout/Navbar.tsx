@@ -11,6 +11,7 @@ import Notifications from "../common/Notifications";
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const totalItems = useCartStore((state) => state.totalItems());
     const { user, isAuthenticated } = useAuthStore();
 
@@ -49,14 +50,23 @@ export default function Navbar() {
 
                     {/* Desktop Search */}
                     <div className="hidden md:flex flex-1 max-w-xl mx-8 relative">
-                        <input
-                            type="text"
-                            placeholder="Search for products..."
-                            className="w-full pl-4 pr-12 py-2.5 bg-white/10 border border-white/20 text-white placeholder-white/60 rounded-full focus:outline-none focus:bg-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all"
-                        />
-                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white">
-                            <Search size={20} />
-                        </button>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            if (searchQuery.trim()) {
+                                window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
+                            }
+                        }}>
+                            <input
+                                type="text"
+                                placeholder="Search for products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-4 pr-12 py-2.5 bg-white/10 border border-white/20 text-white placeholder-white/60 rounded-full focus:outline-none focus:bg-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all"
+                            />
+                            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white">
+                                <Search size={20} />
+                            </button>
+                        </form>
                     </div>
 
                     {/* Desktop Actions */}
@@ -140,14 +150,24 @@ export default function Navbar() {
             {
                 isMenuOpen && (
                     <div className="md:hidden bg-white border-t border-gray-100 p-4 space-y-4 shadow-lg absolute w-full left-0 text-gray-800">
-                        <div className="relative">
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            if (searchQuery.trim()) {
+                                window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
+                                setIsMenuOpen(false);
+                            }
+                        }} className="relative">
                             <input
                                 type="text"
                                 placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl"
                             />
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        </div>
+                            <button type="submit">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            </button>
+                        </form>
 
                         <nav className="space-y-2">
                             <Link href="/shop" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Shop All</Link>
