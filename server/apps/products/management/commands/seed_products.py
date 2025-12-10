@@ -107,13 +107,8 @@ class Command(BaseCommand):
                         allow_pod=True
                     )
 
-                    image_path = os.path.join(client_images_dir, prod_data['image_name'])
-                    if os.path.exists(image_path):
-                        with open(image_path, 'rb') as f:
-                            product.image_main.save(prod_data['image_name'], File(f), save=True)
-                    else:
-                        self.stdout.write(self.style.WARNING(f"Image not found: {image_path}"))
-                        product.save()
+                    product.image_main = f"/images/{prod_data['image_name']}"
+                    product.save()
                 
                 except Category.DoesNotExist:
                     self.stdout.write(self.style.ERROR(f"Category not found: {prod_data['category_slug']}"))

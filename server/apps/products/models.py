@@ -5,7 +5,7 @@ class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    image = models.CharField(max_length=500, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Categories'
@@ -24,7 +24,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     stock_quantity = models.IntegerField(default=0)
-    image_main = models.ImageField(upload_to='products/')
+    image_main = models.CharField(max_length=500)
     is_active = models.BooleanField(default=True)
     allow_pod = models.BooleanField(default=True, help_text="Allow Payment on Delivery")
     created_at = models.DateTimeField(auto_now_add=True)

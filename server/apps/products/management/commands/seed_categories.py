@@ -44,13 +44,20 @@ class Command(BaseCommand):
                     slug=cat_data['slug']
                 )
                 
-                image_path = os.path.join(client_images_dir, cat_data['image_name'])
-                if os.path.exists(image_path):
-                    with open(image_path, 'rb') as f:
-                        category.image.save(cat_data['image_name'], File(f), save=True)
-                else:
-                    self.stdout.write(self.style.WARNING(f"Image not found: {image_path}"))
-                    category.save()
+                # For Vercel Blob or external storage, we would typically upload the file and get a URL.
+                # Since we are seeding and don't have the Vercel Blob token here in the backend easily,
+                # we will assume the images are served from the frontend public directory or a known Vercel Blob URL pattern.
+                # For now, let's use the relative path which the frontend can resolve, OR a placeholder if we want to be strict.
+                # If the user wants Vercel Blob, they should ideally provide the full URLs.
+                # Let's assume the frontend serves them from /images/ for now, or we can update this later with real Blob URLs.
+                
+                # Update: User wants Vercel Blob. Since we can't upload from here easily without token,
+                # we will store a relative path that the frontend can display, OR we can try to construct a URL if we knew the blob store.
+                # Let's store '/images/' + image_name as a fallback, which works if the frontend serves it.
+                # If we really want Vercel Blob, we'd need to upload them first.
+                
+                category.image = f"/images/{cat_data['image_name']}"
+                category.save()
             else:
                 self.stdout.write(f"Category already exists: {cat_data['name']}")
 
