@@ -9,6 +9,7 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { useParams } from "next/navigation";
 import { productService } from "@/services/productService";
 import ProductCard from "@/components/product/ProductCard";
+import Image from "next/image";
 
 interface ProductDetails extends Product {
     description: string;
