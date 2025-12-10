@@ -1,6 +1,7 @@
 "use client";
 
 import { Package, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
 
@@ -42,14 +43,14 @@ export default function OrdersPage() {
 
             <div className="space-y-4">
                 {orders.map((order) => (
-                    <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group">
+                    <Link href={`/dashboard/orders/${order.id}`} key={order.id} className="block bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="bg-blue-50 text-brand-blue p-3 rounded-full">
                                     <Package size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">Order #{order.id}</h3>
+                                    <h3 className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}...</h3>
                                     <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
@@ -62,17 +63,17 @@ export default function OrdersPage() {
 
                                 <div className="flex items-center justify-between w-full md:w-auto gap-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                            order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
-                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                        order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
+                                            order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                                 'bg-blue-100 text-blue-700'
                                         }`}>
-                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                        {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
                                     </span>
                                     <ChevronRight className="text-gray-400 group-hover:text-brand-blue transition-colors" />
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>

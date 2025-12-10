@@ -3,23 +3,25 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useCartStore } from "@/store/cartStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, CreditCard, Truck } from "lucide-react";
 import Link from "next/link";
-
 import { orderService } from "@/services/orderService";
 import Image from "next/image";
-
 import dynamic from "next/dynamic";
+import { addressService, Address } from "@/services/addressService";
+import { useAuthStore } from "@/store/authStore";
 
 const PaystackHandler = dynamic(() => import("@/components/checkout/PaystackHandler"), { ssr: false });
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
+    const { user } = useAuthStore();
     const total = totalPrice();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [showPaystack, setShowPaystack] = useState(false);
+    const [addresses, setAddresses] = useState<Address[]>([]);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -30,6 +32,31 @@ export default function CheckoutPage() {
         county: "",
         paymentMethod: "paystack"
     });
+
+    useEffect(() => {
+        if (user) {
+            addressService.getAddresses().then(setAddresses).catch(console.error);
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.first_name || "",
+                lastName: user.last_name || "",
+                email: user.email || "",
+                phone: user.phone_number || ""
+            }));
+        }
+    }, [user]);
+
+    const handleSelectAddress = (addr: Address) => {
+        setFormData(prev => ({
+            ...prev,
+            firstName: addr.full_name.split(" ")[0] || prev.firstName,
+            lastName: addr.full_name.split(" ").slice(1).join(" ") || prev.lastName,
+            phone: addr.phone_number,
+            address: addr.street_address,
+            city: addr.city,
+            county: addr.postal_code || prev.county
+        }));
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -83,7 +110,6 @@ export default function CheckoutPage() {
     };
 
     if (items.length === 0 && step !== 3) {
-        // ... (empty cart view)
         return (
             <div className="min-h-screen flex flex-col bg-gray-50">
                 <Navbar />
@@ -152,6 +178,37 @@ export default function CheckoutPage() {
                                     <h2 className="text-xl font-bold flex items-center gap-2">
                                         <Truck className="text-brand-blue" /> Delivery Details
                                     </h2>
+
+                                    {/* Saved Addresses */}
+                                    {addresses.length > 0 && (
+                                        <div className="mb-6">
+                                            <h3 className="text-sm font-bold text-gray-700 mb-3">Saved Addresses</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {addresses.map(addr => (
+                                                    <div
+                                                        key={addr.id}
+                                                        onClick={() => handleSelectAddress(addr)}
+                                                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${formData.address === addr.street_address ? 'border-brand-blue bg-blue-50' : 'border-gray-200 hover:border-brand-blue'}`}
+                                                    >
+                                                        <div className="flex justify-between items-start">
+                                                            <span className="font-bold text-gray-800 text-sm">{addr.title}</span>
+                                                            {addr.is_default && <span className="text-xs bg-brand-blue text-white px-1.5 py-0.5 rounded">Default</span>}
+                                                        </div>
+                                                        <p className="text-xs text-gray-600 mt-1">
+                                                            {addr.full_name}<br />
+                                                            {addr.street_address}, {addr.city}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="relative flex py-5 items-center">
+                                                <div className="flex-grow border-t border-gray-200"></div>
+                                                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase">Or enter new address</span>
+                                                <div className="flex-grow border-t border-gray-200"></div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" placeholder="First Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
                                         <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" placeholder="Last Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
