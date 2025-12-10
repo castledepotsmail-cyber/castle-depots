@@ -56,9 +56,14 @@ export default function CheckoutPage() {
             await orderService.createOrder(orderData);
             setStep(3);
             clearCart();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Order creation failed", error);
-            alert("Failed to place order. Please try again.");
+            if (error.response) {
+                console.error("Server Error Data:", error.response.data);
+                alert(`Failed to place order: ${JSON.stringify(error.response.data)}`);
+            } else {
+                alert("Failed to place order. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
