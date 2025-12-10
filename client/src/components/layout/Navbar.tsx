@@ -93,105 +93,106 @@ export default function Navbar() {
                                 </button>
 
                                 {isDropdownOpen && (
-                                    {(user.is_staff || user.is_superuser) && (
-                                        <Link href="/admin" className="flex items-center gap-3 px-4 py-2 text-brand-blue font-bold hover:bg-blue-50">
-                                            <LayoutDashboard size={16} /> Admin Panel
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                                        {(user.is_staff || user.is_superuser) && (
+                                            <Link href="/admin" className="flex items-center gap-3 px-4 py-2 text-brand-blue font-bold hover:bg-blue-50">
+                                                <LayoutDashboard size={16} /> Admin Panel
+                                            </Link>
+                                        )}
+                                        <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                            <User size={16} /> Dashboard
                                         </Link>
-                                    )}
-                                <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                    <User size={16} /> Dashboard
-                                </Link>
-                                <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                    <User size={16} /> Profile
-                                </Link>
-                                <Link href="/dashboard/orders" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                    <ShoppingCart size={16} /> Orders
-                                </Link>
-                                <Link href="/dashboard/wishlist" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                    <User size={16} /> Wishlist
-                                </Link>
-                                <hr className="my-2" />
-                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 w-full text-left">
-                                    <LogOut size={16} /> Logout
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    ) : (
-                    <div className="flex items-center gap-4 pl-4 border-l border-white/20">
-                        <Link href="/auth/login" className="font-bold text-white hover:text-white/80">Sign In</Link>
-                        <Link href="/auth/register" className="bg-white text-brand-blue px-5 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">Register</Link>
-                    </div>
-                        )}
-                </div>
-
-                {/* Mobile Menu Button */}
-                <button
-                    className="md:hidden p-2 text-white"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                >
-                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-            </div>
-        </div>
-
-            {/* Mobile Menu */ }
-    {
-        isMenuOpen && (
-            <div className="md:hidden bg-white border-t border-gray-100 p-4 space-y-4 shadow-lg absolute w-full left-0 text-gray-800">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl"
-                    />
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                </div>
-
-                <nav className="space-y-2">
-                    <Link href="/shop" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Shop All</Link>
-                    {isAuthenticated && user && (
-                        <>
-                            {(user.is_staff || user.is_superuser) && (
-                                <Link href="/admin" className="block px-4 py-3 rounded-lg hover:bg-blue-50 font-bold text-brand-blue">Admin Panel</Link>
-                            )}
-                            <Link href="/dashboard" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Dashboard</Link>
-                            <Link href="/dashboard/orders" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">My Orders</Link>
-                            <Link href="/dashboard/wishlist" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Wishlist</Link>
-                        </>
-                    )}
-                </nav>
-
-                <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
-                    {isAuthenticated && user ? (
-                        <>
-                            <div className="flex items-center gap-3 px-4 py-2">
-                                {user.profile_picture ? (
-                                    <img src={user.profile_picture} alt="Profile" className="w-10 h-10 rounded-full" />
-                                ) : (
-                                    <div className="w-10 h-10 bg-brand-blue text-white rounded-full flex items-center justify-center font-bold">
-                                        {user.first_name?.[0]}{user.last_name?.[0]}
+                                        <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                            <User size={16} /> Profile
+                                        </Link>
+                                        <Link href="/dashboard/orders" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                            <ShoppingCart size={16} /> Orders
+                                        </Link>
+                                        <Link href="/dashboard/wishlist" className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                            <User size={16} /> Wishlist
+                                        </Link>
+                                        <hr className="my-2" />
+                                        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 w-full text-left">
+                                            <LogOut size={16} /> Logout
+                                        </button>
                                     </div>
                                 )}
-                                <div>
-                                    <p className="font-bold text-gray-800">{user.first_name} {user.last_name}</p>
-                                    <p className="text-sm text-gray-500">{user.email}</p>
-                                </div>
                             </div>
-                            <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 font-bold px-4">
-                                <LogOut size={20} /> Logout
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link href="/auth/login" className="block w-full text-center py-3 font-bold text-gray-600 border border-gray-200 rounded-xl">Sign In</Link>
-                            <Link href="/auth/register" className="block w-full text-center py-3 font-bold text-white bg-brand-blue rounded-xl">Create Account</Link>
-                        </>
-                    )}
+                        ) : (
+                            <div className="flex items-center gap-4 pl-4 border-l border-white/20">
+                                <Link href="/auth/login" className="font-bold text-white hover:text-white/80">Sign In</Link>
+                                <Link href="/auth/register" className="bg-white text-brand-blue px-5 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">Register</Link>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden p-2 text-white"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                 </div>
             </div>
-        )
-    }
+
+            {/* Mobile Menu */}
+            {
+                isMenuOpen && (
+                    <div className="md:hidden bg-white border-t border-gray-100 p-4 space-y-4 shadow-lg absolute w-full left-0 text-gray-800">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl"
+                            />
+                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        </div>
+
+                        <nav className="space-y-2">
+                            <Link href="/shop" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Shop All</Link>
+                            {isAuthenticated && user && (
+                                <>
+                                    {(user.is_staff || user.is_superuser) && (
+                                        <Link href="/admin" className="block px-4 py-3 rounded-lg hover:bg-blue-50 font-bold text-brand-blue">Admin Panel</Link>
+                                    )}
+                                    <Link href="/dashboard" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Dashboard</Link>
+                                    <Link href="/dashboard/orders" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">My Orders</Link>
+                                    <Link href="/dashboard/wishlist" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Wishlist</Link>
+                                </>
+                            )}
+                        </nav>
+
+                        <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
+                            {isAuthenticated && user ? (
+                                <>
+                                    <div className="flex items-center gap-3 px-4 py-2">
+                                        {user.profile_picture ? (
+                                            <img src={user.profile_picture} alt="Profile" className="w-10 h-10 rounded-full" />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-brand-blue text-white rounded-full flex items-center justify-center font-bold">
+                                                {user.first_name?.[0]}{user.last_name?.[0]}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <p className="font-bold text-gray-800">{user.first_name} {user.last_name}</p>
+                                            <p className="text-sm text-gray-500">{user.email}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 font-bold px-4">
+                                        <LogOut size={20} /> Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link href="/auth/login" className="block w-full text-center py-3 font-bold text-gray-600 border border-gray-200 rounded-xl">Sign In</Link>
+                                    <Link href="/auth/register" className="block w-full text-center py-3 font-bold text-white bg-brand-blue rounded-xl">Create Account</Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )
+            }
         </nav >
     );
 }
