@@ -23,14 +23,20 @@ class OrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items_data = validated_data.pop('items')
         user = self.context['request'].user
-        order = Order.objects.create(user=user, **validated_data)
         
-        for item_data in items_data:
-            # We should probably validate product existence and price here or in view
-            # For simplicity, assuming product_id is valid and we fetch price from product or trust client (don't trust client for price in real app)
-            # Better: fetch product and set price from DB.
-            from apps.products.models import Product
-            product = Product.objects.get(id=item_data['product_id'])
-            OrderItem.objects.create(order=order, product=product, price=product.price, quantity=item_data['quantity'])
+        try:
+            order = Order.objects.create(user=user, **validated_data)
             
-        return order
+            for item_data in items_data:
+                # We should probably validate product existence and price here or in view
+                # For simplicity, assuming product_id is valid and we fetch price from product or trust client (don't trust client for price in real app)
+                # Better: fetch product and set price from DB.
+                from apps.products.models import Product
+                product = Product.objects.get(id=item_data['product_id'])
+                OrderItem.objects.create(order=order, product=product, price=product.price, quantity=item_data['quantity'])
+                
+            return order
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise serializers.ValidationError(f"Error creating order: {str(e)}")

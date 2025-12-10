@@ -8,6 +8,8 @@ import { CheckCircle, CreditCard, Truck } from "lucide-react";
 import Link from "next/link";
 
 import { orderService } from "@/services/orderService";
+import Image from "next/image";
+
 import dynamic from "next/dynamic";
 
 const PaystackHandler = dynamic(() => import("@/components/checkout/PaystackHandler"), { ssr: false });
@@ -230,7 +232,18 @@ export default function CheckoutPage() {
                                 <div className="space-y-4 max-h-60 overflow-y-auto mb-4 pr-2">
                                     {items.map(item => (
                                         <div key={item.id} className="flex gap-3 text-sm">
-                                            <div className="w-12 h-12 bg-gray-100 rounded flex-shrink-0"></div>
+                                            <div className="w-12 h-12 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden">
+                                                {item.image ? (
+                                                    <Image
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                                                )}
+                                            </div>
                                             <div className="flex-grow">
                                                 <p className="font-semibold text-gray-800 line-clamp-1">{item.name}</p>
                                                 <p className="text-gray-500">Qty: {item.quantity}</p>
