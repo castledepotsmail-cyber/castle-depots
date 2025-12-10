@@ -6,6 +6,7 @@ from .serializers import ProductSerializer, CategorySerializer, WishlistSerializ
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
     
 
 

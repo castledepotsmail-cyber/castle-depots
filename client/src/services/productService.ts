@@ -41,5 +41,10 @@ export const productService = {
     getCategories: async () => {
         const response = await api.get('/products/categories/');
         return response.data;
+    },
+
+    getCategory: async (slug: string) => {
+        const response = await api.get(`/products/categories/${slug}/`);
+        return response.data;
     }
 };
