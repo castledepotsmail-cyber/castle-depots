@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
 import { PaystackButton } from "react-paystack";
 import { useAuthStore } from "@/store/authStore";
-import { generateReceipt } from "@/utils/receiptGenerator";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -122,8 +121,9 @@ export default function OrdersPage() {
                                         Order completed and paid
                                     </p>
                                     <button
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                             e.preventDefault();
+                                            const { generateReceipt } = await import("@/utils/receiptGenerator");
                                             generateReceipt(order);
                                         }}
                                         className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"

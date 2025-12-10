@@ -8,7 +8,6 @@ import { orderService } from "@/services/orderService";
 import Image from "next/image";
 import { PaystackButton } from "react-paystack";
 import { useAuthStore } from "@/store/authStore";
-import { generateReceipt } from "@/utils/receiptGenerator";
 
 export default function OrderDetailsPage() {
     const params = useParams();
@@ -99,7 +98,10 @@ export default function OrderDetailsPage() {
                         </span>
                         {canDownloadReceipt && (
                             <button
-                                onClick={() => generateReceipt(order)}
+                                onClick={async () => {
+                                    const { generateReceipt } = await import("@/utils/receiptGenerator");
+                                    generateReceipt(order);
+                                }}
                                 className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
                             >
                                 <Download size={18} />
