@@ -39,7 +39,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
 
     // Add Castle Depots Logo (Text-based for now)
     pdf.setFillColor(30, 64, 175); // Brand blue
-    pdf.rect(0, 0, 210, 40, 'F');
+    pdf.rect(0, 0, 210, 55, 'F');
 
     try {
         const logoUrl = '/logo.png';
@@ -60,62 +60,62 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
 
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Premium Quality Products for Your Lifestyle', 105, 28, { align: 'center' });
-    pdf.text('www.castledepots.co.ke | castledepotsmail@gmail.com', 105, 35, { align: 'center' });
+    pdf.text('Premium Quality Products for Your Lifestyle', 105, 42, { align: 'center' });
+    pdf.text('www.castledepots.co.ke | castledepotsmail@gmail.com', 105, 48, { align: 'center' });
 
     // Receipt Title
     pdf.setTextColor(30, 64, 175);
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('OFFICIAL RECEIPT', 105, 55, { align: 'center' });
+    pdf.text('OFFICIAL RECEIPT', 105, 65, { align: 'center' });
 
     // Receipt Details Box
     pdf.setDrawColor(200, 200, 200);
     pdf.setLineWidth(0.5);
-    pdf.rect(15, 65, 180, 35);
+    pdf.rect(15, 75, 180, 35);
 
     pdf.setTextColor(31, 41, 55);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
 
     // Left column
-    pdf.text('Receipt No:', 20, 73);
-    pdf.text('Order Date:', 20, 81);
-    pdf.text('Payment Method:', 20, 89);
-    pdf.text('Payment Status:', 20, 97);
+    pdf.text('Receipt No:', 20, 83);
+    pdf.text('Order Date:', 20, 91);
+    pdf.text('Payment Method:', 20, 99);
+    pdf.text('Payment Status:', 20, 107);
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text(order.id.slice(0, 13).toUpperCase(), 55, 73);
-    pdf.text(new Date(order.created_at).toLocaleDateString('en-GB'), 55, 81);
-    pdf.text(order.payment_method.replace('_', ' ').toUpperCase(), 55, 89);
+    pdf.text(order.id.slice(0, 13).toUpperCase(), 55, 83);
+    pdf.text(new Date(order.created_at).toLocaleDateString('en-GB'), 55, 91);
+    pdf.text(order.payment_method.replace('_', ' ').toUpperCase(), 55, 99);
 
     // Payment status with color
     if (order.is_paid) {
         pdf.setTextColor(22, 163, 74); // Green
-        pdf.text('PAID', 55, 97);
+        pdf.text('PAID', 55, 107);
     } else {
         pdf.setTextColor(234, 88, 12); // Orange
-        pdf.text('UNPAID', 55, 97);
+        pdf.text('UNPAID', 55, 107);
     }
 
     // Right column
     pdf.setTextColor(31, 41, 55);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Customer:', 105, 73);
-    pdf.text('Order Status:', 105, 81);
-    pdf.text('Delivery Address:', 105, 89);
+    pdf.text('Customer:', 105, 83);
+    pdf.text('Order Status:', 105, 91);
+    pdf.text('Delivery Address:', 105, 99);
 
     pdf.setFont('helvetica', 'normal');
     const customerName = pdf.splitTextToSize(order.user || 'N/A', 50);
-    pdf.text(customerName, 140, 73);
-    pdf.text(order.status.replace('_', ' ').toUpperCase(), 140, 81);
+    pdf.text(customerName, 140, 83);
+    pdf.text(order.status.replace('_', ' ').toUpperCase(), 140, 91);
 
     // Wrap delivery address
     const addressLines = pdf.splitTextToSize(order.delivery_address, 50);
-    pdf.text(addressLines, 140, 89);
+    pdf.text(addressLines, 140, 99);
 
     // Items Table Header
-    let yPos = 115;
+    let yPos = 125;
     pdf.setFillColor(30, 64, 175);
     pdf.rect(15, yPos, 180, 10, 'F');
 

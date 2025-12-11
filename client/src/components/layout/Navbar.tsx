@@ -138,13 +138,22 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden p-2 text-white"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+                    {/* Mobile Actions */}
+                    <div className="flex items-center gap-2 md:hidden">
+                        <Notifications />
+
+                        <Link href="/cart" className="relative p-2 text-white/90 hover:text-white transition-colors">
+                            <ShoppingCart size={24} />
+                            <CartCount count={totalItems} />
+                        </Link>
+
+                        <button
+                            className="p-2 text-white"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        >
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
