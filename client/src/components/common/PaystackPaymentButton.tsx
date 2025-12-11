@@ -19,6 +19,7 @@ const PaystackPaymentButton = ({ email, amount, publicKey, text, onSuccess, onCl
         email,
         amount,
         publicKey,
+        currency: 'KES',
     };
 
     const initializePayment = usePaystackPayment(config);
