@@ -149,7 +149,7 @@ export default function OrderDetailsPage() {
                             <PaystackPaymentButton
                                 email={user?.email || ''}
                                 amount={Math.round(parseFloat(order.total_amount) * 100)}
-                                publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
+                                publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462'}
                                 text="Pay Now"
                                 onSuccess={handlePaymentSuccess}
                                 onClose={() => console.log("Payment closed")}

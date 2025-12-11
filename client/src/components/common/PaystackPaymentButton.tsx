@@ -27,13 +27,13 @@ const PaystackPaymentButton = ({ email, amount, publicKey, text, onSuccess, onCl
         <button
             onClick={(e) => {
                 e.preventDefault();
-                console.log("Paystack button clicked");
-                console.log("Config:", config);
-                if (initializePayment) {
-                    initializePayment({ onSuccess, onClose });
-                } else {
-                    console.error("Paystack initializePayment is undefined");
+
+                if (!publicKey) {
+                    alert("Payment system configuration error: Public key is missing. Please contact support.");
+                    return;
                 }
+
+                initializePayment({ onSuccess, onClose });
             }}
             className={className}
         >
