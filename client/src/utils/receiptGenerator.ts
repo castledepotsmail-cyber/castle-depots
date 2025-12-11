@@ -41,15 +41,27 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.setFillColor(30, 64, 175); // Brand blue
     pdf.rect(0, 0, 210, 40, 'F');
 
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(28);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('CASTLE DEPOTS', 105, 18, { align: 'center' });
+    try {
+        const logoUrl = '/logo.png';
+        const response = await fetch(logoUrl);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        const base64data = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+        });
+        pdf.addImage(base64data, 'PNG', 90, 5, 30, 30);
+    } catch (error) {
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(28);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('CASTLE DEPOTS', 105, 18, { align: 'center' });
+    }
 
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Premium Quality Products for Your Lifestyle', 105, 28, { align: 'center' });
-    pdf.text('www.castledepots.co.ke | support@castledepots.co.ke', 105, 35, { align: 'center' });
+    pdf.text('www.castledepots.co.ke | castledepotsmail@gmail.com', 105, 35, { align: 'center' });
 
     // Receipt Title
     pdf.setTextColor(30, 64, 175);
@@ -170,7 +182,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(107, 114, 128);
-    pdf.text('For support, contact us at support@castledepots.co.ke or call +254 700 000 000', 105, yPos + 32, { align: 'center' });
+    pdf.text('For support, contact us at castledepotsmail@gmail.com or call +254 111 731613', 105, yPos + 32, { align: 'center' });
 
     // Footer
     const footerY = 280;
