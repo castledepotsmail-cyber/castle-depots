@@ -34,7 +34,7 @@ export default function Navbar() {
     }, []);
 
     return (
-        <nav className="bg-brand-blue shadow-lg sticky top-0 z-50">
+        <nav className="bg-brand-blue shadow-lg sticky top-0 z-50 mb-12">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo Area with Round Bump */}
