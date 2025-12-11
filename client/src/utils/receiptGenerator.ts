@@ -26,7 +26,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     const pdf = new jsPDF();
 
     // Generate QR Code
-    const qrCodeData = await QRCode.toDataURL(`https://castledepots.co.ke/track-order?id=${order.id}`, {
+    const qrCodeData = await QRCode.toDataURL(`https://castle-depots.vercel.app/track-order?id=${order.id}`, {
         width: 100,
         margin: 1,
     });
