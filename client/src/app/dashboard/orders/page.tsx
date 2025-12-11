@@ -4,7 +4,12 @@ import { Package, ChevronRight, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
-import PaystackPaymentButton from "@/components/common/PaystackPaymentButton";
+import dynamic from "next/dynamic";
+
+const PaystackPaymentButton = dynamic(
+    () => import("@/components/common/PaystackPaymentButton"),
+    { ssr: false }
+);
 import { useAuthStore } from "@/store/authStore";
 
 export default function OrdersPage() {
@@ -120,21 +125,37 @@ export default function OrdersPage() {
                                         <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
                                         Order completed and paid
                                     </p>
-                                    <button
-                                        onClick={async (e) => {
-                                            e.preventDefault();
-                                            const { generateReceipt } = await import("@/utils/receiptGenerator");
-                                            generateReceipt(order);
-                                        }}
-                                        className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
-                                        Download Receipt
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                const { generateReceipt } = await import("@/utils/receiptGenerator");
+                                                generateReceipt(order, 'view');
+                                            }}
+                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            View
+                                        </button>
+                                        <button
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                const { generateReceipt } = await import("@/utils/receiptGenerator");
+                                                generateReceipt(order);
+                                            }}
+                                            className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                            Download Receipt
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

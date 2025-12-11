@@ -1,12 +1,7 @@
 "use client";
 
-import dynamic from 'next/dynamic';
 import React from 'react';
-
-const PaystackButton = dynamic(
-    () => import('react-paystack').then((mod) => mod.PaystackButton),
-    { ssr: false }
-);
+import { usePaystackPayment } from 'react-paystack';
 
 interface PaystackPaymentButtonProps {
     email: string;
@@ -18,6 +13,26 @@ interface PaystackPaymentButtonProps {
     className?: string;
 }
 
-export default function PaystackPaymentButton(props: PaystackPaymentButtonProps) {
-    return <PaystackButton {...props} />;
-}
+const PaystackPaymentButton = ({ email, amount, publicKey, text, onSuccess, onClose, className }: PaystackPaymentButtonProps) => {
+    const config = {
+        reference: (new Date()).getTime().toString(),
+        email,
+        amount,
+        publicKey,
+    };
+
+    const initializePayment = usePaystackPayment(config);
+
+    return (
+        <button
+            onClick={() => {
+                initializePayment({ onSuccess, onClose });
+            }}
+            className={className}
+        >
+            {text}
+        </button>
+    );
+};
+
+export default PaystackPaymentButton;

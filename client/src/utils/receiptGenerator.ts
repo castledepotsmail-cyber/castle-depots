@@ -18,7 +18,7 @@ interface Order {
     is_paid: boolean;
 }
 
-export const generateReceipt = async (order: Order) => {
+export const generateReceipt = async (order: Order, action: 'download' | 'view' = 'download') => {
     // Dynamic imports to avoid SSR issues
     const jsPDF = (await import('jspdf')).default;
     const QRCode = await import('qrcode');
@@ -182,6 +182,12 @@ export const generateReceipt = async (order: Order) => {
     pdf.text('This is a computer-generated receipt and does not require a signature.', 105, footerY + 5, { align: 'center' });
     pdf.text(`Generated on ${new Date().toLocaleString('en-GB')}`, 105, footerY + 10, { align: 'center' });
 
-    // Save PDF
-    pdf.save(`Castle-Depots-Receipt-${order.id.slice(0, 8)}.pdf`);
+    if (action === 'view') {
+        const pdfBlob = pdf.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl, '_blank');
+    } else {
+        // Save PDF
+        pdf.save(`Castle-Depots-Receipt-${order.id.slice(0, 8)}.pdf`);
+    }
 };
