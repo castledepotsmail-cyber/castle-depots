@@ -101,17 +101,18 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     // Right column
     pdf.setTextColor(31, 41, 55);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Customer:', 115, 73);
-    pdf.text('Order Status:', 115, 81);
-    pdf.text('Delivery Address:', 115, 89);
+    pdf.text('Customer:', 105, 73);
+    pdf.text('Order Status:', 105, 81);
+    pdf.text('Delivery Address:', 105, 89);
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text(order.user || 'N/A', 155, 73);
-    pdf.text(order.status.replace('_', ' ').toUpperCase(), 155, 81);
+    const customerName = pdf.splitTextToSize(order.user || 'N/A', 50);
+    pdf.text(customerName, 140, 73);
+    pdf.text(order.status.replace('_', ' ').toUpperCase(), 140, 81);
 
     // Wrap delivery address
-    const addressLines = pdf.splitTextToSize(order.delivery_address, 40);
-    pdf.text(addressLines, 155, 89);
+    const addressLines = pdf.splitTextToSize(order.delivery_address, 50);
+    pdf.text(addressLines, 140, 89);
 
     // Items Table Header
     let yPos = 115;
