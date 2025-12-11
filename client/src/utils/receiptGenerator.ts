@@ -110,9 +110,9 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(10);
     pdf.text('ITEM', 20, yPos + 7);
-    pdf.text('QTY', 130, yPos + 7);
-    pdf.text('PRICE', 155, yPos + 7);
-    pdf.text('TOTAL', 180, yPos + 7, { align: 'right' });
+    pdf.text('QTY', 125, yPos + 7);
+    pdf.text('PRICE', 145, yPos + 7);
+    pdf.text('TOTAL', 190, yPos + 7, { align: 'right' });
 
     // Items
     yPos += 15;
@@ -129,11 +129,11 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
         }
 
         // Item name (wrapped if too long)
-        const itemName = pdf.splitTextToSize(item.product.name, 100);
+        const itemName = pdf.splitTextToSize(item.product.name, 95);
         pdf.text(itemName, 20, yPos);
 
-        pdf.text(item.quantity.toString(), 130, yPos);
-        pdf.text(`KES ${parseFloat(item.price).toLocaleString()}`, 155, yPos);
+        pdf.text(item.quantity.toString(), 125, yPos);
+        pdf.text(`KES ${parseFloat(item.price).toLocaleString()}`, 145, yPos);
         pdf.text(`KES ${itemTotal.toLocaleString()}`, 190, yPos, { align: 'right' });
 
         yPos += 10;
@@ -148,10 +148,10 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     yPos += 10;
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text('TOTAL AMOUNT:', 130, yPos);
+    pdf.text('TOTAL AMOUNT:', 110, yPos);
     pdf.setTextColor(30, 64, 175);
     pdf.setFontSize(16);
-    pdf.text(`KES ${parseFloat(order.total_amount).toLocaleString()}`, 190, yPos, { align: 'right' });
+    pdf.text(`KES ${parseFloat(order.total_amount).toLocaleString()}`, 195, yPos, { align: 'right' });
 
     // QR Code
     pdf.addImage(qrCodeData, 'PNG', 20, yPos + 10, 30, 30);
