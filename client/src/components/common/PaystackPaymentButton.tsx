@@ -25,8 +25,15 @@ const PaystackPaymentButton = ({ email, amount, publicKey, text, onSuccess, onCl
 
     return (
         <button
-            onClick={() => {
-                initializePayment({ onSuccess, onClose });
+            onClick={(e) => {
+                e.preventDefault();
+                console.log("Paystack button clicked");
+                console.log("Config:", config);
+                if (initializePayment) {
+                    initializePayment({ onSuccess, onClose });
+                } else {
+                    console.error("Paystack initializePayment is undefined");
+                }
             }}
             className={className}
         >
