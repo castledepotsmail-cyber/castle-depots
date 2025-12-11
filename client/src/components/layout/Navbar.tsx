@@ -49,13 +49,15 @@ export default function Navbar() {
                     </div>
 
                     {/* Desktop Search */}
-                    <div className="hidden md:flex flex-1 max-w-xl mx-8 relative">
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            if (searchQuery.trim()) {
-                                window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
-                            }
-                        }}>
+                    <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+                        <form
+                            className="w-full relative"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (searchQuery.trim()) {
+                                    window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
+                                }
+                            }}>
                             <input
                                 type="text"
                                 placeholder="Search for products..."
