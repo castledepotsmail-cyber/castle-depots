@@ -72,41 +72,86 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def test_smtp(self, request):
         """
-        Synchronous email test to debug SMTP settings.
-        POST /api/communication/newsletter/test_smtp/
-        Body: {"email": "recipient@example.com"}
+        Comprehensive Network & SMTP Diagnostic
         """
-        email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required'}, status=400)
-
-        from django.core.mail import send_mail
-        from django.conf import settings
+        import socket
         import smtplib
+        import ssl
+        from django.conf import settings
+        
+        results = {
+            'checks': [],
+            'settings': {
+                'EMAIL_HOST': settings.EMAIL_HOST,
+                'EMAIL_PORT': settings.EMAIL_PORT,
+                'EMAIL_USE_TLS': settings.EMAIL_USE_TLS,
+                'EMAIL_HOST_USER': settings.EMAIL_HOST_USER,
+                # Mask password
+                'EMAIL_HOST_PASSWORD': '*' * len(settings.EMAIL_HOST_PASSWORD) if settings.EMAIL_HOST_PASSWORD else 'NOT SET'
+            }
+        }
 
+        # 1. DNS Resolution
         try:
-            # Print settings for debug (be careful with passwords in real logs, but here we need to know)
-            print(f"Testing SMTP with User: {settings.EMAIL_HOST_USER}")
-            
-            send_mail(
-                'SMTP Test - Castle Depots',
-                'If you are reading this, email sending is WORKING.',
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=False,
-            )
-            return Response({'message': f'Successfully sent test email to {email}'})
-        except smtplib.SMTPAuthenticationError as e:
-            return Response({
-                'error': 'SMTP Authentication Failed',
-                'details': str(e),
-                'hint': 'Check EMAIL_HOST_USER and EMAIL_HOST_PASSWORD. If using Gmail, ensure App Password is used.'
-            }, status=500)
+            ip = socket.gethostbyname(settings.EMAIL_HOST)
+            results['checks'].append(f"DNS Resolution ({settings.EMAIL_HOST}): SUCCESS -> {ip}")
         except Exception as e:
-            import traceback
-            return Response({
-                'error': 'Email Sending Failed',
-                'type': type(e).__name__,
-                'details': str(e),
-                'traceback': traceback.format_exc()
-            }, status=500)
+            results['checks'].append(f"DNS Resolution ({settings.EMAIL_HOST}): FAILED -> {str(e)}")
+            return Response(results, status=500)
+
+        # 2. Socket Connection Test (Raw TCP)
+        try:
+            sock = socket.create_connection((settings.EMAIL_HOST, settings.EMAIL_PORT), timeout=10)
+            results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}: SUCCESS")
+            sock.close()
+        except Exception as e:
+            results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}: FAILED -> {str(e)}")
+            # If 587 fails, try 465 just to see
+            try:
+                sock = socket.create_connection((settings.EMAIL_HOST, 465), timeout=5)
+                results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:465 (Alternative): SUCCESS")
+                sock.close()
+            except Exception as e2:
+                results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:465 (Alternative): FAILED -> {str(e2)}")
+            
+            return Response(results, status=500)
+
+        # 3. SMTP Handshake
+        try:
+            if settings.EMAIL_USE_TLS:
+                server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=10)
+                server.set_debuglevel(1)
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+            else:
+                server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=10)
+                server.ehlo()
+            
+            results['checks'].append("SMTP Handshake & TLS: SUCCESS")
+            
+            # 4. Authentication
+            try:
+                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                results['checks'].append("SMTP Login: SUCCESS")
+                
+                # 5. Send Mail
+                email_to = request.data.get('email')
+                if email_to:
+                    server.sendmail(settings.EMAIL_HOST_USER, [email_to], 
+                        f"Subject: SMTP Test\n\nThis is a test email from Castle Depots diagnostic tool.")
+                    results['checks'].append(f"Email Send to {email_to}: SUCCESS")
+                
+                server.quit()
+                return Response(results)
+                
+            except smtplib.SMTPAuthenticationError as e:
+                results['checks'].append(f"SMTP Login: FAILED -> {str(e)}")
+                return Response(results, status=500)
+            except Exception as e:
+                results['checks'].append(f"SMTP Error after handshake: {str(e)}")
+                return Response(results, status=500)
+                
+        except Exception as e:
+            results['checks'].append(f"SMTP Handshake: FAILED -> {str(e)}")
+            return Response(results, status=500)
