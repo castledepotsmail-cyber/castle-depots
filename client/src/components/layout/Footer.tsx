@@ -1,7 +1,27 @@
 import Link from "next/link";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import api from "@/lib/api";
 
 export default function Footer() {
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await api.post('/communication/newsletter/subscribe/', { email });
+            toast.success("Successfully subscribed to newsletter!");
+            setEmail("");
+        } catch (error) {
+            toast.error("Failed to subscribe. Please try again.");
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <footer className="bg-gray-900 text-white pt-12 pb-6 mt-12">
             <div className="container mx-auto px-4">
@@ -45,16 +65,23 @@ export default function Footer() {
                         <p className="text-gray-400 text-sm mb-4">
                             Subscribe for flash sales and exclusive deals.
                         </p>
-                        <div className="flex">
+                        <form onSubmit={handleSubscribe} className="flex">
                             <input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 className="bg-gray-800 text-white px-4 py-2 rounded-l-md w-full focus:outline-none border border-gray-700 focus:border-brand-gold"
+                                required
                             />
-                            <button className="bg-brand-gold text-brand-blue px-4 py-2 rounded-r-md font-bold hover:bg-yellow-400 transition-colors">
-                                Join
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-brand-gold text-brand-blue px-4 py-2 rounded-r-md font-bold hover:bg-yellow-400 transition-colors disabled:opacity-50"
+                            >
+                                {loading ? '...' : 'Join'}
                             </button>
-                        </div>
+                        </form>
                         <div className="flex gap-4 mt-6 text-gray-400">
                             <Facebook className="hover:text-brand-gold cursor-pointer" size={20} />
                             <Instagram className="hover:text-brand-gold cursor-pointer" size={20} />

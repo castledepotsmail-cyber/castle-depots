@@ -70,3 +70,12 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Contact from {self.name} - {self.subject}"
+
+class NewsletterSubscriber(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email

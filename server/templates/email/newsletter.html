@@ -1,0 +1,14 @@
+{% extends 'email/base_email.html' %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+<p>Hello {{ user.first_name|default:"Valued Customer" }},</p>
+
+<div style="font-size: 16px; line-height: 1.8;">
+    {{ message|safe }}
+</div>
+
+<p style="text-align: center; margin-top: 30px;">
+    <a href="https://castle-depots.vercel.app" class="button">Visit Store</a>
+</p>
+{% endblock %}

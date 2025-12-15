@@ -14,3 +14,10 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         model = ContactMessage
         fields = '__all__'
         read_only_fields = ['created_at']
+
+from .models import NewsletterSubscriber
+
+class NewsletterSubscriberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsletterSubscriber
+        fields = ['email']

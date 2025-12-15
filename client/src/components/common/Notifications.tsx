@@ -23,20 +23,28 @@ export default function Notifications() {
     const { isAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        if (isAuthenticated && isOpen) {
+        if (isAuthenticated) {
             fetchNotifications();
+            const interval = setInterval(() => fetchNotifications(true), 30000);
+            return () => clearInterval(interval);
         }
-    }, [isAuthenticated, isOpen]);
+    }, [isAuthenticated]);
 
-    const fetchNotifications = async () => {
-        setLoading(true);
+    useEffect(() => {
+        if (isAuthenticated && isOpen) {
+            fetchNotifications(true);
+        }
+    }, [isOpen]);
+
+    const fetchNotifications = async (isBackground = false) => {
+        if (!isBackground) setLoading(true);
         try {
             const response = await api.get('/communication/notifications/');
             setNotifications(response.data.results || response.data);
         } catch (error) {
             console.error("Failed to fetch notifications", error);
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     };
 

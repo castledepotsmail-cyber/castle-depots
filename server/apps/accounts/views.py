@@ -51,14 +51,33 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 
-                # In a real app, send email here. For now, we'll print to console.
-                reset_link = f"http://localhost:3000/auth/reset-password?uid={uid}&token={token}"
-                print(f"PASSWORD RESET LINK for {email}: {reset_link}")
+                # Send email
+                reset_link = f"https://castle-depots.vercel.app/auth/reset-password?uid={uid}&token={token}"
                 
-                return Response({'message': 'Password reset link sent to email (check console)'}, status=status.HTTP_200_OK)
+                from django.core.mail import send_mail
+                from django.template.loader import render_to_string
+                from django.utils.html import strip_tags
+                from django.conf import settings
+
+                subject = 'Reset Your Password - Castle Depots'
+                html_message = render_to_string('email/password_reset.html', {'user': user, 'reset_link': reset_link})
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                
+                print(f"PASSWORD RESET LINK for {email}: {reset_link}") # Keep for debug
+                
+                return Response({'message': 'Password reset link sent to email'}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 # Don't reveal user existence
-                return Response({'message': 'Password reset link sent to email (check console)'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Password reset link sent to email'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetConfirmView(generics.GenericAPIView):

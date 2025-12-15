@@ -1,0 +1,35 @@
+{% extends 'email/base_email.html' %}
+
+{% block content %}
+<h2>Order Update #{{ order.id|stringformat:"s"|slice:":8" }}</h2>
+<p>Hello {{ order.user.first_name|default:order.user.username }},</p>
+
+{% if order.status == 'placed' %}
+<p>Thank you for your order! We have received it and will begin processing it shortly.</p>
+{% elif order.status == 'payment_confirmed' %}
+<p>We have confirmed your payment. Your order is now being prepared.</p>
+{% elif order.status == 'processing' %}
+<p>Your order is currently being packed and prepared for shipment.</p>
+{% elif order.status == 'shipped' %}
+<p>Great news! Your order is on its way.</p>
+{% elif order.status == 'delivered' %}
+<p>Your order has been delivered. We hope you enjoy your purchase!</p>
+{% elif order.status == 'cancelled' %}
+<p>Your order has been cancelled.</p>
+{% else %}
+<p>The status of your order has been updated to: <strong>{{ order.get_status_display }}</strong></p>
+{% endif %}
+
+<div style="margin: 20px 0; padding: 15px; background-color: #f8fafc; border-radius: 5px;">
+    <h3>Order Details</h3>
+    <p><strong>Order ID:</strong> #{{ order.id }}</p>
+    <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+    <p><strong>Total Amount:</strong> KES {{ order.total_amount }}</p>
+    <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+    <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+</div>
+
+<p style="text-align: center;">
+    <a href="https://castle-depots.vercel.app/dashboard/orders/{{ order.id }}" class="button">View Order</a>
+</p>
+{% endblock %}

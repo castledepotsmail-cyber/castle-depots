@@ -3,7 +3,7 @@
 import { useAuthStore } from "@/store/authStore";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Loader2, LayoutDashboard, Package, ShoppingBag, Users, Megaphone, Menu, X } from "lucide-react";
+import { Loader2, LayoutDashboard, Package, ShoppingBag, Users, Megaphone, Menu, X, Mail } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -40,6 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
         { href: '/admin/customers', icon: Users, label: 'Customers' },
         { href: '/admin/campaigns', icon: Megaphone, label: 'Campaigns' },
+        { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
     ];
 
     return (
@@ -72,8 +73,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={item.href}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                        ? 'bg-brand-blue text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-brand-blue text-white'
+                                    : 'text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
                                 <Icon size={20} />
