@@ -1,0 +1,22 @@
+{% extends 'email/base_email.html' %}
+
+{% block content %}
+<h2>Welcome to Castle Depots!</h2>
+<p>Hello {{ user.first_name|default:user.username }},</p>
+
+<p>We are thrilled to have you on board! Thank you for joining Castle Depots, your premier destination for hardware,
+    trends, and catering essentials.</p>
+
+<p>Here's what you can do now:</p>
+<ul>
+    <li>Explore our wide range of products.</li>
+    <li>Create your wishlist.</li>
+    <li>Track your orders easily.</li>
+</ul>
+
+<p>If you have any questions, feel free to reply to this email or contact our support team.</p>
+
+<p style="text-align: center; margin-top: 30px;">
+    <a href="https://castle-depots.vercel.app/shop" class="button">Start Shopping</a>
+</p>
+{% endblock %}

@@ -26,6 +26,39 @@ class RegisterView(generics.CreateAPIView):
             try:
                 user = serializer.save()
                 print(f"User created successfully: {user.username}")
+                
+                # Send Welcome Email & Notification
+                try:
+                    from apps.communication.models import Notification
+                    from django.core.mail import send_mail
+                    from django.template.loader import render_to_string
+                    from django.utils.html import strip_tags
+                    from django.conf import settings
+
+                    # In-app notification
+                    Notification.objects.create(
+                        user=user,
+                        type='welcome',
+                        title='Welcome to Castle Depots!',
+                        message='Thank you for joining us. We are excited to have you on board.'
+                    )
+
+                    # Email
+                    subject = 'Welcome to Castle Depots!'
+                    html_message = render_to_string('email/welcome.html', {'user': user})
+                    plain_message = strip_tags(html_message)
+                    
+                    send_mail(
+                        subject,
+                        plain_message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        html_message=html_message,
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    print(f"Failed to send welcome email/notification: {e}")
+
                 return Response({
                     'message': 'User created successfully',
                     'user': UserSerializer(user).data
@@ -154,6 +187,39 @@ def google_auth(request):
                 'profile_picture': profile_picture,
             }
         )
+        
+        if created:
+             # Send Welcome Email & Notification
+            try:
+                from apps.communication.models import Notification
+                from django.core.mail import send_mail
+                from django.template.loader import render_to_string
+                from django.utils.html import strip_tags
+                from django.conf import settings
+
+                # In-app notification
+                Notification.objects.create(
+                    user=user,
+                    type='welcome',
+                    title='Welcome to Castle Depots!',
+                    message='Thank you for joining us via Google. We are excited to have you on board.'
+                )
+
+                # Email
+                subject = 'Welcome to Castle Depots!'
+                html_message = render_to_string('email/welcome.html', {'user': user})
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Failed to send welcome email/notification: {e}")
         
         # Update profile picture if user exists
         if not created and profile_picture:

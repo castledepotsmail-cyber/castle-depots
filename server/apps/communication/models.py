@@ -24,6 +24,7 @@ class Notification(models.Model):
         ('support_response', 'Support Response'),
         ('promotion', 'Promotional Offer'),
         ('system', 'System Message'),
+        ('welcome', 'Welcome'),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
