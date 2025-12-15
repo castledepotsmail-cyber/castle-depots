@@ -30,7 +30,17 @@ export default function AdminOrdersPage() {
         try {
             await adminService.updateOrderStatus(orderId, newStatus);
             setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-            alert("Order status updated!");
+
+            // Show detailed success message
+            const statusLabels: { [key: string]: string } = {
+                'placed': 'Placed',
+                'processing': 'Processing',
+                'shipped': 'Shipped',
+                'delivered': 'Delivered',
+                'cancelled': 'Cancelled'
+            };
+            const label = statusLabels[newStatus] || newStatus;
+            alert(`Order status updated to ${label}.\n\n✓ In-app notification sent to user.\n✓ Email notification sent to user.`);
         } catch (error) {
             console.error("Failed to update status", error);
             alert("Failed to update status.");
@@ -111,8 +121,8 @@ export default function AdminOrdersPage() {
                                         value={order.status}
                                         onChange={(e) => handleStatusChange(order.id, e.target.value)}
                                         className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
-                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
-                                                    'bg-blue-50 text-blue-700'
+                                            order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                'bg-blue-50 text-blue-700'
                                             }`}
                                     >
                                         <option value="placed">Placed</option>
