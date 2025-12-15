@@ -13,6 +13,12 @@ def track_order_status_change(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Order)
 def create_order_notification(sender, instance, created, **kwargs):
+    import threading
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from django.conf import settings
+
     if created:
         Notification.objects.create(
             user=instance.user,
@@ -21,30 +27,28 @@ def create_order_notification(sender, instance, created, **kwargs):
             message=f"Your order #{str(instance.id)[:8]} has been placed successfully."
         )
         
-        # Send Email
-        from django.core.mail import send_mail
-        from django.template.loader import render_to_string
-        from django.utils.html import strip_tags
-        from django.conf import settings
+        def send_placed_email():
+            try:
+                subject = f'Order Placed #{str(instance.id)[:8]}'
+                html_message = render_to_string('email/order_status_update.html', {'order': instance})
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [instance.user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                print(f"Email sent successfully to {instance.user.email}")
+            except Exception as e:
+                print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+                import traceback
+                traceback.print_exc()
 
-        try:
-            subject = f'Order Placed #{str(instance.id)[:8]}'
-            html_message = render_to_string('email/order_status_update.html', {'order': instance})
-            plain_message = strip_tags(html_message)
-            
-            send_mail(
-                subject,
-                plain_message,
-                settings.DEFAULT_FROM_EMAIL,
-                [instance.user.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-            print(f"Email sent successfully to {instance.user.email}")
-        except Exception as e:
-            print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+        threading.Thread(target=send_placed_email).start()
+
     else:
         # Check if status changed
         if hasattr(instance, '_old_status') and instance._old_status != instance.status:
@@ -74,27 +78,24 @@ def create_order_notification(sender, instance, created, **kwargs):
                 message=message
             )
             
-            # Send Email
-            from django.core.mail import send_mail
-            from django.template.loader import render_to_string
-            from django.utils.html import strip_tags
-            from django.conf import settings
+            def send_update_email():
+                try:
+                    subject = f'Order Update #{str(instance.id)[:8]} - {title}'
+                    html_message = render_to_string('email/order_status_update.html', {'order': instance})
+                    plain_message = strip_tags(html_message)
+                    
+                    send_mail(
+                        subject,
+                        plain_message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [instance.user.email],
+                        html_message=html_message,
+                        fail_silently=False, 
+                    )
+                    print(f"Email sent successfully to {instance.user.email}")
+                except Exception as e:
+                    print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
 
-            try:
-                subject = f'Order Update #{str(instance.id)[:8]} - {title}'
-                html_message = render_to_string('email/order_status_update.html', {'order': instance})
-                plain_message = strip_tags(html_message)
-                
-                send_mail(
-                    subject,
-                    plain_message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [instance.user.email],
-                    html_message=html_message,
-                    fail_silently=False, 
-                )
-                print(f"Email sent successfully to {instance.user.email}")
-            except Exception as e:
-                print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
-                import traceback
-                traceback.print_exc()
+            threading.Thread(target=send_update_email).start()
