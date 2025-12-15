@@ -72,12 +72,12 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def test_smtp(self, request):
         """
-        Comprehensive Network & SMTP Diagnostic
+        Fast Network & SMTP Diagnostic (Timeout Protected)
         """
         import socket
         import smtplib
-        import ssl
         from django.conf import settings
+        import time
         
         results = {
             'checks': [],
@@ -86,72 +86,77 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
                 'EMAIL_PORT': settings.EMAIL_PORT,
                 'EMAIL_USE_TLS': settings.EMAIL_USE_TLS,
                 'EMAIL_HOST_USER': settings.EMAIL_HOST_USER,
-                # Mask password
                 'EMAIL_HOST_PASSWORD': '*' * len(settings.EMAIL_HOST_PASSWORD) if settings.EMAIL_HOST_PASSWORD else 'NOT SET'
             }
         }
 
-        # 1. DNS Resolution
+        def log(msg):
+            results['checks'].append(f"[{time.strftime('%H:%M:%S')}] {msg}")
+
+        # 1. DNS Resolution (with manual timeout hack via socket default)
+        original_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(3.0) # Global 3s timeout
+        
         try:
+            log(f"Resolving {settings.EMAIL_HOST}...")
             ip = socket.gethostbyname(settings.EMAIL_HOST)
-            results['checks'].append(f"DNS Resolution ({settings.EMAIL_HOST}): SUCCESS -> {ip}")
+            log(f"DNS Success: {ip}")
         except Exception as e:
-            results['checks'].append(f"DNS Resolution ({settings.EMAIL_HOST}): FAILED -> {str(e)}")
+            log(f"DNS Failed: {str(e)}")
+            socket.setdefaulttimeout(original_timeout)
             return Response(results, status=500)
 
-        # 2. Socket Connection Test (Raw TCP)
+        # 2. TCP Connection
         try:
-            sock = socket.create_connection((settings.EMAIL_HOST, settings.EMAIL_PORT), timeout=10)
-            results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}: SUCCESS")
+            log(f"Connecting to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}...")
+            sock = socket.create_connection((settings.EMAIL_HOST, settings.EMAIL_PORT), timeout=3.0)
+            log("TCP Connection Success")
             sock.close()
         except Exception as e:
-            results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}: FAILED -> {str(e)}")
-            # If 587 fails, try 465 just to see
-            try:
-                sock = socket.create_connection((settings.EMAIL_HOST, 465), timeout=5)
-                results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:465 (Alternative): SUCCESS")
-                sock.close()
-            except Exception as e2:
-                results['checks'].append(f"TCP Connection to {settings.EMAIL_HOST}:465 (Alternative): FAILED -> {str(e2)}")
-            
+            log(f"TCP Connection Failed: {str(e)}")
+            socket.setdefaulttimeout(original_timeout)
             return Response(results, status=500)
 
         # 3. SMTP Handshake
         try:
+            log("Starting SMTP Handshake...")
             if settings.EMAIL_USE_TLS:
-                server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=10)
-                server.set_debuglevel(1)
+                server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=5.0)
                 server.ehlo()
                 server.starttls()
                 server.ehlo()
             else:
-                server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=10)
+                server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=5.0)
                 server.ehlo()
             
-            results['checks'].append("SMTP Handshake & TLS: SUCCESS")
+            log("SMTP Handshake Success")
             
-            # 4. Authentication
+            # 4. Login
             try:
+                log(f"Authenticating as {settings.EMAIL_HOST_USER}...")
                 server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-                results['checks'].append("SMTP Login: SUCCESS")
+                log("Authentication Success")
                 
-                # 5. Send Mail
+                # 5. Send
                 email_to = request.data.get('email')
                 if email_to:
+                    log(f"Sending test email to {email_to}...")
                     server.sendmail(settings.EMAIL_HOST_USER, [email_to], 
-                        f"Subject: SMTP Test\n\nThis is a test email from Castle Depots diagnostic tool.")
-                    results['checks'].append(f"Email Send to {email_to}: SUCCESS")
+                        f"Subject: SMTP Test\n\nDiagnostic test successful.")
+                    log("Email Sent Successfully")
                 
                 server.quit()
+                socket.setdefaulttimeout(original_timeout)
                 return Response(results)
                 
-            except smtplib.SMTPAuthenticationError as e:
-                results['checks'].append(f"SMTP Login: FAILED -> {str(e)}")
-                return Response(results, status=500)
             except Exception as e:
-                results['checks'].append(f"SMTP Error after handshake: {str(e)}")
+                log(f"Auth/Send Failed: {str(e)}")
+                try: server.quit()
+                except: pass
+                socket.setdefaulttimeout(original_timeout)
                 return Response(results, status=500)
                 
         except Exception as e:
-            results['checks'].append(f"SMTP Handshake: FAILED -> {str(e)}")
+            log(f"SMTP Handshake Failed: {str(e)}")
+            socket.setdefaulttimeout(original_timeout)
             return Response(results, status=500)
