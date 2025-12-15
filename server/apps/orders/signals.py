@@ -38,10 +38,14 @@ def create_order_notification(sender, instance, created, **kwargs):
                 settings.DEFAULT_FROM_EMAIL,
                 [instance.user.email],
                 html_message=html_message,
-                fail_silently=True,
+                html_message=html_message,
+                fail_silently=False,
             )
+            print(f"Email sent successfully to {instance.user.email}")
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+            import traceback
+            traceback.print_exc()
     else:
         # Check if status changed
         if hasattr(instance, '_old_status') and instance._old_status != instance.status:
@@ -88,7 +92,11 @@ def create_order_notification(sender, instance, created, **kwargs):
                     settings.DEFAULT_FROM_EMAIL,
                     [instance.user.email],
                     html_message=html_message,
-                    fail_silently=True, # Don't crash if email fails
-                )
-            except Exception as e:
-                print(f"Failed to send email: {e}")
+                html_message=html_message,
+                fail_silently=False, 
+            )
+            print(f"Email sent successfully to {instance.user.email}")
+        except Exception as e:
+            print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+            import traceback
+            traceback.print_exc()
