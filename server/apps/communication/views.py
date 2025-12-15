@@ -68,3 +68,45 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
         threading.Thread(target=send_task).start()
 
         return Response({'message': 'Newsletter sending started in background'})
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    def test_smtp(self, request):
+        """
+        Synchronous email test to debug SMTP settings.
+        POST /api/communication/newsletter/test_smtp/
+        Body: {"email": "recipient@example.com"}
+        """
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=400)
+
+        from django.core.mail import send_mail
+        from django.conf import settings
+        import smtplib
+
+        try:
+            # Print settings for debug (be careful with passwords in real logs, but here we need to know)
+            print(f"Testing SMTP with User: {settings.EMAIL_HOST_USER}")
+            
+            send_mail(
+                'SMTP Test - Castle Depots',
+                'If you are reading this, email sending is WORKING.',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return Response({'message': f'Successfully sent test email to {email}'})
+        except smtplib.SMTPAuthenticationError as e:
+            return Response({
+                'error': 'SMTP Authentication Failed',
+                'details': str(e),
+                'hint': 'Check EMAIL_HOST_USER and EMAIL_HOST_PASSWORD. If using Gmail, ensure App Password is used.'
+            }, status=500)
+        except Exception as e:
+            import traceback
+            return Response({
+                'error': 'Email Sending Failed',
+                'type': type(e).__name__,
+                'details': str(e),
+                'traceback': traceback.format_exc()
+            }, status=500)
