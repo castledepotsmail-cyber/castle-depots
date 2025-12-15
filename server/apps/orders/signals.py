@@ -38,7 +38,6 @@ def create_order_notification(sender, instance, created, **kwargs):
                 settings.DEFAULT_FROM_EMAIL,
                 [instance.user.email],
                 html_message=html_message,
-                html_message=html_message,
                 fail_silently=False,
             )
             print(f"Email sent successfully to {instance.user.email}")
@@ -92,11 +91,10 @@ def create_order_notification(sender, instance, created, **kwargs):
                     settings.DEFAULT_FROM_EMAIL,
                     [instance.user.email],
                     html_message=html_message,
-                html_message=html_message,
-                fail_silently=False, 
-            )
-            print(f"Email sent successfully to {instance.user.email}")
-        except Exception as e:
-            print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+                    fail_silently=False, 
+                )
+                print(f"Email sent successfully to {instance.user.email}")
+            except Exception as e:
+                print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+                import traceback
+                traceback.print_exc()
