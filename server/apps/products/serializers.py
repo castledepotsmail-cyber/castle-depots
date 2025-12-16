@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Wishlist
+from .models import Product, Category, Wishlist, ProductImage
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
