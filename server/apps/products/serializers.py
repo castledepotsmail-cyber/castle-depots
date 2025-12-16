@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Wishlist, ProductImage
+from .models import Product, Category, Wishlist, ProductImage, Review
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,6 +11,38 @@ class ProductImageSerializer(serializers.ModelSerializer):
         model = ProductImage
         fields = ['id', 'image']
 
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    product_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'product_id', 'rating', 'comment', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        product_id = validated_data['product_id']
+        
+        # Check if user has purchased the product and it is delivered & paid
+        from apps.orders.models import OrderItem
+        has_purchased = OrderItem.objects.filter(
+            order__user=user,
+            product_id=product_id,
+            order__status='delivered',
+            order__is_paid=True
+        ).exists()
+        
+        if not has_purchased:
+            raise serializers.ValidationError("You can only review products you have purchased, paid for, and received.")
+            
+        # Check if already reviewed
+        if Review.objects.filter(user=user, product_id=product_id).exists():
+            raise serializers.ValidationError("You have already reviewed this product.")
+            
+        validated_data['user'] = user
+        return super().create(validated_data)
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     category_id = serializers.UUIDField(write_only=True)
@@ -20,12 +52,16 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    average_rating = serializers.FloatField(read_only=True)
+    review_count = serializers.IntegerField(read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = ['id', 'category', 'category_id', 'name', 'slug', 'description', 
                   'price', 'discount_price', 'stock_quantity', 'image_main', 
-                  'is_active', 'allow_pod', 'created_at', 'images', 'uploaded_images']
+                  'is_active', 'allow_pod', 'created_at', 'images', 'uploaded_images',
+                  'average_rating', 'review_count', 'reviews']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -46,13 +82,6 @@ class ProductSerializer(serializers.ModelSerializer):
         
         # Update images if provided
         if uploaded_images is not None:
-            # For simplicity, we can clear old images and add new ones, 
-            # or append. Usually replacing is safer for "edit" forms unless specific "add" logic exists.
-            # Let's assume the frontend sends the COMPLETE list of desired images.
-            # BUT, existing images have IDs. 
-            # If the user wants to KEEP existing images, they should be re-sent or we need a smarter diff.
-            # A simple approach for now: Clear all and re-create. 
-            # Or better: The frontend sends a list of URL strings. 
             instance.images.all().delete()
             for image_url in uploaded_images:
                 ProductImage.objects.create(product=instance, image=image_url)

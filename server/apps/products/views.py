@@ -54,3 +54,24 @@ class WishlistViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+from .models import Review
+from .serializers import ReviewSerializer
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        # Filter reviews by product if product_id is provided in query params
+        product_id = self.request.query_params.get('product_id')
+        if product_id:
+            return Review.objects.filter(product_id=product_id)
+        return Review.objects.all()
+
+    def perform_create(self, serializer):
+        # User is set in serializer.create but we can also set it here if needed, 
+        # but the serializer logic handles the complex validation.
+        # We just need to ensure the user is passed in context, which it is by default.
+        serializer.save(user=self.request.user)
