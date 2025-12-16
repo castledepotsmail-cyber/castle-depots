@@ -24,6 +24,9 @@ export interface Product {
     created_at: string;
     updated_at: string;
     discountPrice?: number; // mapped
+    average_rating?: number;
+    review_count?: number;
+    reviews?: any[];
 }
 
 export const productService = {
@@ -74,6 +77,15 @@ export const productService = {
 
     getCategory: async (slug: string) => {
         const response = await api.get(`/products/categories/${slug}/`);
+        return response.data;
+    },
+
+    createReview: async (productId: string, rating: number, comment: string) => {
+        const response = await api.post('/products/reviews/', {
+            product_id: productId,
+            rating,
+            comment
+        });
         return response.data;
     }
 };
