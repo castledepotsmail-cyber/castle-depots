@@ -7,6 +7,8 @@ export interface Product {
     price: number;
     image: string;
     discountPrice?: number;
+    average_rating?: number;
+    review_count?: number;
 }
 
 export interface CartItem extends Product {
