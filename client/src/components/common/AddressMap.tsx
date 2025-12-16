@@ -53,27 +53,34 @@ export default function AddressMap({ latitude, longitude, onLocationSelect }: Ad
         }
     }, [latitude, longitude]);
 
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!searchQuery.trim()) return;
+    // Debounce search
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchQuery.trim().length > 2) {
+                setIsSearching(true);
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+                    const data = await response.json();
+                    setSearchResults(data);
+                } catch (error) {
+                    console.error("Search failed", error);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults([]);
+            }
+        }, 500);
 
-        setIsSearching(true);
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
-            const data = await response.json();
-            setSearchResults(data);
-        } catch (error) {
-            console.error("Search failed", error);
-        } finally {
-            setIsSearching(false);
-        }
-    };
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
 
     const handleSelectLocation = (lat: number, lon: number) => {
         const newPos: [number, number] = [lat, lon];
         setPosition(newPos);
         setSearchResults([]);
-        setSearchQuery("");
+        // Keep query to show what was selected or clear it? Let's keep it for now but maybe update it to display name?
+        // setSearchQuery(""); 
         if (onLocationSelect) {
             onLocationSelect(lat, lon);
         }
@@ -82,7 +89,7 @@ export default function AddressMap({ latitude, longitude, onLocationSelect }: Ad
     return (
         <div className="space-y-2">
             <div className="relative">
-                <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="flex gap-2">
                     <input
                         type="text"
                         value={searchQuery}
@@ -90,22 +97,17 @@ export default function AddressMap({ latitude, longitude, onLocationSelect }: Ad
                         placeholder="Search for a place (e.g. Westlands, Nairobi)"
                         className="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-blue text-sm"
                     />
-                    <button
-                        type="submit"
-                        disabled={isSearching}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 disabled:opacity-50"
-                    >
-                        {isSearching ? '...' : 'Search'}
-                    </button>
-                </form>
+                    {isSearching && <div className="flex items-center px-2 text-gray-400 text-sm">Searching...</div>}
+                </div>
 
                 {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-10 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 z-[1000] bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
                         {searchResults.map((result: any) => (
                             <button
+                                type="button" // Prevent form submission if inside a form
                                 key={result.place_id}
                                 onClick={() => handleSelectLocation(parseFloat(result.lat), parseFloat(result.lon))}
-                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-0 block"
                             >
                                 {result.display_name}
                             </button>
