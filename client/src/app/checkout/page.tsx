@@ -13,6 +13,10 @@ import { addressService, Address } from "@/services/addressService";
 import { useAuthStore } from "@/store/authStore";
 
 const PaystackHandler = dynamic(() => import("@/components/checkout/PaystackHandler"), { ssr: false });
+const AddressMap = dynamic(() => import("@/components/common/AddressMap"), {
+    ssr: false,
+    loading: () => <div className="h-64 w-full bg-gray-100 animate-pulse rounded-lg flex items-center justify-center text-gray-400">Loading Map...</div>
+});
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
@@ -224,14 +228,29 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" placeholder="First Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
-                                        <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" placeholder="Last Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
-                                        <input name="email" value={formData.email} onChange={handleInputChange} type="email" placeholder="Email Address" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
-                                        <input name="phone" value={formData.phone} onChange={handleInputChange} type="text" placeholder="Phone Number (M-Pesa)" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
-                                        <input name="address" value={formData.address} onChange={handleInputChange} type="text" placeholder="Street Address / Location" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
-                                        <input name="city" value={formData.city} onChange={handleInputChange} type="text" placeholder="City / Town" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
-                                        <input name="county" value={formData.county} onChange={handleInputChange} type="text" placeholder="County" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Pin Location on Map</label>
+                                            <p className="text-xs text-gray-500 mb-2">Click on the map to set the exact delivery location.</p>
+                                            <AddressMap
+                                                latitude={formData.latitude}
+                                                longitude={formData.longitude}
+                                                onLocationSelect={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                                            />
+                                            {formData.latitude && (
+                                                <p className="text-xs text-green-600 mt-1">Location selected: {formData.latitude.toFixed(6)}, {formData.longitude?.toFixed(6)}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" placeholder="First Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                            <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" placeholder="Last Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                            <input name="email" value={formData.email} onChange={handleInputChange} type="email" placeholder="Email Address" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
+                                            <input name="phone" value={formData.phone} onChange={handleInputChange} type="text" placeholder="Phone Number (M-Pesa)" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
+                                            <input name="address" value={formData.address} onChange={handleInputChange} type="text" placeholder="Street Address / Location" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue md:col-span-2" />
+                                            <input name="city" value={formData.city} onChange={handleInputChange} type="text" placeholder="City / Town" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                            <input name="county" value={formData.county} onChange={handleInputChange} type="text" placeholder="County" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => setStep(2)}
@@ -264,18 +283,25 @@ export default function CheckoutPage() {
                                             </div>
                                         </label>
 
-                                        <label className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                        <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-colors ${(formData.city.toLowerCase().includes('nairobi') || formData.county.toLowerCase().includes('nairobi'))
+                                            ? 'border-gray-200 hover:bg-gray-50'
+                                            : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+                                            }`}>
                                             <input
                                                 type="radio"
                                                 name="paymentMethod"
                                                 value="pod"
                                                 checked={formData.paymentMethod === 'pod'}
                                                 onChange={handleInputChange}
+                                                disabled={!(formData.city.toLowerCase().includes('nairobi') || formData.county.toLowerCase().includes('nairobi'))}
                                                 className="text-brand-blue focus:ring-brand-blue"
                                             />
                                             <div>
                                                 <span className="font-bold block text-gray-900">Pay on Delivery</span>
                                                 <span className="text-sm text-gray-500">Pay via M-Pesa upon receipt (Nairobi Only)</span>
+                                                {!(formData.city.toLowerCase().includes('nairobi') || formData.county.toLowerCase().includes('nairobi')) && (
+                                                    <span className="block text-xs text-red-500 mt-1 font-semibold">Not available for your location. Only available in Nairobi.</span>
+                                                )}
                                             </div>
                                         </label>
                                     </div>
