@@ -182,6 +182,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://castle-depots-git-main-castledepotsmail-cybers-projects.vercel.app",
     "https://castle-depots-castledepotsmail-cybers-projects.vercel.app",
     "http://localhost:3000",
+    "https://castledepots.com",
+    "https://www.castledepots.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -210,6 +212,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://castle-depots-git-main-castledepotsmail-cybers-projects.vercel.app",
     "https://castle-depots-castledepotsmail-cybers-projects.vercel.app",
     "https://castle-depots.onrender.com",
+    "https://castledepots.com",
+    "https://www.castledepots.com",
 ]
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'

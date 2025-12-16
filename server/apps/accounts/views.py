@@ -85,7 +85,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 
                 # Send email
-                reset_link = f"https://castle-depots.vercel.app/auth/reset-password?uid={uid}&token={token}"
+                reset_link = f"https://castledepots.com/auth/reset-password?uid={uid}&token={token}"
                 
                 from django.core.mail import send_mail
                 from django.template.loader import render_to_string
