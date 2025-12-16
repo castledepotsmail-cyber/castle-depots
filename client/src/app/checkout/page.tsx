@@ -22,7 +22,18 @@ export default function CheckoutPage() {
     const [loading, setLoading] = useState(false);
     const [showPaystack, setShowPaystack] = useState(false);
     const [addresses, setAddresses] = useState<Address[]>([]);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        address: string;
+        city: string;
+        county: string;
+        paymentMethod: string;
+        latitude?: number;
+        longitude?: number;
+    }>({
         firstName: "",
         lastName: "",
         email: "",
@@ -54,7 +65,9 @@ export default function CheckoutPage() {
             phone: addr.phone_number,
             address: addr.street_address,
             city: addr.city,
-            county: addr.postal_code || prev.county
+            county: addr.postal_code || prev.county,
+            latitude: addr.latitude,
+            longitude: addr.longitude
         }));
     };
 
@@ -77,6 +90,8 @@ export default function CheckoutPage() {
                 payment_method: formData.paymentMethod,
                 total_amount: total,
                 delivery_address: `${formData.address}, ${formData.city}, ${formData.county}`,
+                delivery_latitude: formData.latitude,
+                delivery_longitude: formData.longitude,
                 items: items.map(item => ({
                     product_id: item.id,
                     quantity: item.quantity

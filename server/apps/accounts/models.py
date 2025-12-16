@@ -20,6 +20,8 @@ class Address(models.Model):
     street_address = models.TextField()
     city = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
     is_default = models.BooleanField(default=False)
     
     class Meta:

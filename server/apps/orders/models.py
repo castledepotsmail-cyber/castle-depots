@@ -30,6 +30,8 @@ class Order(models.Model):
     
     # Delivery Details
     delivery_address = models.TextField()
+    delivery_latitude = models.FloatField(blank=True, null=True)
+    delivery_longitude = models.FloatField(blank=True, null=True)
     tracking_notes = models.TextField(blank=True, help_text="Internal notes for tracking")
     
     created_at = models.DateTimeField(auto_now_add=True)

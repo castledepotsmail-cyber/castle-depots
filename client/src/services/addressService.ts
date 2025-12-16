@@ -8,6 +8,8 @@ export interface Address {
     street_address: string;
     city: string;
     postal_code?: string;
+    latitude?: number;
+    longitude?: number;
     is_default: boolean;
 }
 

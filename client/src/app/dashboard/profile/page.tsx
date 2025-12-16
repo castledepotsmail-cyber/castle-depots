@@ -6,6 +6,13 @@ import { userService } from "@/services/userService";
 import { addressService, Address } from "@/services/addressService";
 import { useAuthStore } from "@/store/authStore";
 
+import dynamic from "next/dynamic";
+
+const AddressMap = dynamic(() => import("@/components/common/AddressMap"), {
+    ssr: false,
+    loading: () => <div className="h-64 w-full bg-gray-100 animate-pulse rounded-lg flex items-center justify-center text-gray-400">Loading Map...</div>
+});
+
 export default function ProfilePage() {
     const { user, setUser } = useAuthStore();
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -23,7 +30,17 @@ export default function ProfilePage() {
     // Address Modal State
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-    const [addressForm, setAddressForm] = useState({
+    const [addressForm, setAddressForm] = useState<{
+        title: string;
+        full_name: string;
+        phone_number: string;
+        street_address: string;
+        city: string;
+        postal_code: string;
+        latitude?: number;
+        longitude?: number;
+        is_default: boolean;
+    }>({
         title: '',
         full_name: '',
         phone_number: '',
@@ -86,6 +103,8 @@ export default function ProfilePage() {
                 street_address: address.street_address,
                 city: address.city,
                 postal_code: address.postal_code || '',
+                latitude: address.latitude,
+                longitude: address.longitude,
                 is_default: address.is_default
             });
         } else {
@@ -97,6 +116,8 @@ export default function ProfilePage() {
                 street_address: '',
                 city: '',
                 postal_code: '',
+                latitude: undefined,
+                longitude: undefined,
                 is_default: false
             });
         }
@@ -254,8 +275,8 @@ export default function ProfilePage() {
 
             {/* Address Modal */}
             {showAddressModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-xl my-8">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">
                                 {editingAddress ? 'Edit Address' : 'Add New Address'}
@@ -266,27 +287,30 @@ export default function ProfilePage() {
                         </div>
 
                         <form onSubmit={handleSaveAddress} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Address Title (e.g. Home, Office)</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={addressForm.title}
-                                    onChange={(e) => setAddressForm({ ...addressForm, title: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                    placeholder="Home"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Address Title</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={addressForm.title}
+                                        onChange={(e) => setAddressForm({ ...addressForm, title: e.target.value })}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                        placeholder="e.g. Home, Office"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={addressForm.full_name}
+                                        onChange={(e) => setAddressForm({ ...addressForm, full_name: e.target.value })}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={addressForm.full_name}
-                                    onChange={(e) => setAddressForm({ ...addressForm, full_name: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
                                 <input
@@ -297,13 +321,28 @@ export default function ProfilePage() {
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Street Address / Location</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Pin Location on Map</label>
+                                <p className="text-xs text-gray-500 mb-2">Click on the map to set the exact delivery location.</p>
+                                <AddressMap
+                                    latitude={addressForm.latitude}
+                                    longitude={addressForm.longitude}
+                                    onLocationSelect={(lat, lng) => setAddressForm({ ...addressForm, latitude: lat, longitude: lng })}
+                                />
+                                {addressForm.latitude && (
+                                    <p className="text-xs text-green-600 mt-1">Location selected: {addressForm.latitude.toFixed(6)}, {addressForm.longitude?.toFixed(6)}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Street Address / Description</label>
                                 <textarea
                                     required
                                     value={addressForm.street_address}
                                     onChange={(e) => setAddressForm({ ...addressForm, street_address: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-24 resize-none"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-20 resize-none"
+                                    placeholder="Building name, floor, nearby landmarks..."
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">

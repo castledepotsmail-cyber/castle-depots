@@ -13,6 +13,11 @@ const PaystackPaymentButton = dynamic(
     () => import("@/components/common/PaystackPaymentButton"),
     { ssr: false }
 );
+
+const AddressMap = dynamic(() => import("@/components/common/AddressMap"), {
+    ssr: false,
+    loading: () => <div className="h-48 w-full bg-gray-100 animate-pulse rounded-lg flex items-center justify-center text-gray-400">Loading Map...</div>
+});
 import { useAuthStore } from "@/store/authStore";
 
 export default function OrderDetailsPage() {
@@ -253,6 +258,15 @@ export default function OrderDetailsPage() {
                             <span>Delivery Address</span>
                             <span className="text-right max-w-xs">{order.delivery_address}</span>
                         </div>
+                        {order.delivery_latitude && order.delivery_longitude && (
+                            <div className="pt-4">
+                                <p className="text-sm font-bold text-gray-700 mb-2">Delivery Location</p>
+                                <AddressMap
+                                    latitude={order.delivery_latitude}
+                                    longitude={order.delivery_longitude}
+                                />
+                            </div>
+                        )}
                         <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                             <span className="font-bold text-gray-800">Total Amount</span>
                             <span className="font-bold text-xl text-brand-blue">KES {parseFloat(order.total_amount).toLocaleString()}</span>
