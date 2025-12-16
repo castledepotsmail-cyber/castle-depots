@@ -1,12 +1,166 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Upload, Save, Trash2 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { ArrowLeft, Upload, Save, Trash2, Loader2, X, Plus } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { productService, Category } from "@/services/productService";
+import { upload } from '@vercel/blob/client';
+import Image from "next/image";
 
 export default function EditProductPage() {
     const params = useParams();
-    const productId = params.id;
+    const router = useRouter();
+    const productId = params.id as string;
+
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const multiFileInputRef = useRef<HTMLInputElement>(null);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        discount_price: "",
+        stock_quantity: "",
+        category: "",
+        is_active: true,
+        allow_pod: true,
+        image_main: "",
+        uploaded_images: [] as string[],
+        sku: ""
+    });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [cats, product] = await Promise.all([
+                    productService.getCategories(),
+                    productService.getProduct(productId)
+                ]);
+                setCategories(cats);
+
+                setFormData({
+                    name: product.name,
+                    description: product.description,
+                    price: product.price.toString(),
+                    discount_price: product.discountPrice ? product.discountPrice.toString() : "",
+                    stock_quantity: product.stock_quantity.toString(),
+                    category: product.category?.id || "",
+                    is_active: product.isActive, // Note: check if API returns isActive or is_active
+                    allow_pod: product.allowPod || true, // Check API field
+                    image_main: product.image,
+                    uploaded_images: product.images ? product.images.map((img: any) => img.image) : [],
+                    sku: product.id // Using ID as SKU for now if not separate
+                });
+            } catch (error) {
+                console.error("Failed to fetch data", error);
+                alert("Failed to load product data.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (productId) fetchData();
+    }, [productId]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+        }));
+    };
+
+    const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        setUploading(true);
+        try {
+            const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+            setFormData(prev => ({ ...prev, image_main: newBlob.url }));
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload image.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleAdditionalImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        setUploading(true);
+        const files = Array.from(e.target.files);
+        const newUrls: string[] = [];
+        try {
+            for (const file of files) {
+                const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+                newUrls.push(newBlob.url);
+            }
+            setFormData(prev => ({ ...prev, uploaded_images: [...prev.uploaded_images, ...newUrls] }));
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload some images.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const removeAdditionalImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            uploaded_images: prev.uploaded_images.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.name || !formData.price || !formData.category) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const productData = {
+                ...formData,
+                price: parseFloat(formData.price),
+                discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+                stock_quantity: parseInt(formData.stock_quantity) || 0,
+                category_id: formData.category,
+                uploaded_images: formData.uploaded_images
+            };
+
+            // Using direct API call for update as productService might not have update method exposed or updated
+            const { default: api } = await import('@/lib/api');
+            await api.put(`/products/${productId}/`, productData);
+
+            alert("Product updated successfully!");
+            router.push('/admin/products');
+        } catch (error) {
+            console.error("Failed to update product", error);
+            alert("Failed to update product.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+        try {
+            const { default: api } = await import('@/lib/api');
+            await api.delete(`/products/${productId}/`);
+            router.push('/admin/products');
+        } catch (error) {
+            console.error("Failed to delete product", error);
+            alert("Failed to delete product.");
+        }
+    };
+
+    if (loading) {
+        return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-brand-blue" size={48} /></div>;
+    }
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -17,7 +171,10 @@ export default function EditProductPage() {
                     </Link>
                     <h1 className="text-2xl font-bold text-gray-800">Edit Product</h1>
                 </div>
-                <button className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-bold transition-colors flex items-center gap-2">
+                <button
+                    onClick={handleDelete}
+                    className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-bold transition-colors flex items-center gap-2"
+                >
                     <Trash2 size={20} /> Delete Product
                 </button>
             </div>
@@ -29,13 +186,24 @@ export default function EditProductPage() {
                         <h2 className="font-bold text-lg text-gray-800">Basic Information</h2>
 
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
-                            <input type="text" defaultValue="Premium Gold Chafing Dish 8L" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Product Name *</label>
+                            <input
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                type="text"
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                            />
                         </div>
 
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                            <textarea defaultValue="High quality stainless steel chafing dish..." className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-32"></textarea>
+                            <textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-32"
+                            ></textarea>
                         </div>
                     </div>
 
@@ -44,22 +212,82 @@ export default function EditProductPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Price (KES)</label>
-                                <input type="number" defaultValue={4500} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Price (KES) *</label>
+                                <input
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleInputChange}
+                                    type="number"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Discount Price</label>
-                                <input type="number" defaultValue={3800} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                <input
+                                    name="discount_price"
+                                    value={formData.discount_price}
+                                    onChange={handleInputChange}
+                                    type="number"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Stock Quantity</label>
-                                <input type="number" defaultValue={15} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                <input
+                                    name="stock_quantity"
+                                    value={formData.stock_quantity}
+                                    onChange={handleInputChange}
+                                    type="number"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">SKU</label>
-                                <input type="text" defaultValue="CD-KIT-001" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue" />
+                                <input
+                                    name="sku"
+                                    value={formData.sku}
+                                    onChange={handleInputChange}
+                                    type="text"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                                    disabled
+                                />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Additional Images Section */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                        <h2 className="font-bold text-lg text-gray-800">Gallery Images</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                            {formData.uploaded_images.map((img, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                    <Image src={img} alt={`Gallery ${idx}`} fill className="object-cover" />
+                                    <button
+                                        onClick={() => removeAdditionalImage(idx)}
+                                        className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+
+                            <button
+                                onClick={() => multiFileInputRef.current?.click()}
+                                className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 hover:border-brand-blue hover:text-brand-blue transition-colors"
+                                disabled={uploading}
+                            >
+                                {uploading ? <Loader2 className="animate-spin" /> : <Plus size={24} />}
+                                <span className="text-xs font-semibold mt-1">Add Image</span>
+                            </button>
+                        </div>
+                        <input
+                            type="file"
+                            ref={multiFileInputRef}
+                            onChange={handleAdditionalImagesUpload}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                        />
                     </div>
                 </div>
 
@@ -69,49 +297,92 @@ export default function EditProductPage() {
                         <h2 className="font-bold text-lg text-gray-800">Organization</h2>
 
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
-                            <select className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue">
-                                <option>Kitchenware</option>
-                                <option>Fashion</option>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Category *</label>
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                            >
+                                <option value="">Select Category</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
                             </select>
                         </div>
 
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">Status</label>
-                            <select className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue">
-                                <option>Active</option>
-                                <option>Draft</option>
+                            <select
+                                name="is_active"
+                                value={formData.is_active ? "true" : "false"}
+                                onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.value === 'true' }))}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
+                            >
+                                <option value="true">Active</option>
+                                <option value="false">Draft</option>
                             </select>
                         </div>
 
                         <div className="flex items-center gap-2 pt-2">
-                            <input type="checkbox" id="pod" className="rounded text-brand-blue focus:ring-brand-blue" defaultChecked />
+                            <input
+                                type="checkbox"
+                                id="pod"
+                                name="allow_pod"
+                                checked={formData.allow_pod}
+                                onChange={handleInputChange}
+                                className="rounded text-brand-blue focus:ring-brand-blue"
+                            />
                             <label htmlFor="pod" className="text-sm text-gray-700">Allow Pay on Delivery</label>
                         </div>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                        <h2 className="font-bold text-lg text-gray-800">Images</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center relative group">
-                                <span className="text-xs text-gray-400">Img 1</span>
-                                <button className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <X size={12} />
+                        <h2 className="font-bold text-lg text-gray-800">Main Image</h2>
+
+                        {formData.image_main ? (
+                            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+                                <Image src={formData.image_main} alt="Product" fill className="object-cover" />
+                                <button
+                                    onClick={() => setFormData(prev => ({ ...prev, image_main: "" }))}
+                                    className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md hover:bg-red-50 text-red-500"
+                                >
+                                    <X size={16} />
                                 </button>
                             </div>
-                            <div className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 cursor-pointer">
-                                <Upload size={20} className="text-gray-400" />
+                        ) : (
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                                {uploading ? (
+                                    <Loader2 className="mx-auto text-brand-blue animate-spin mb-2" size={32} />
+                                ) : (
+                                    <Upload className="mx-auto text-gray-400 mb-2" size={32} />
+                                )}
+                                <p className="text-sm text-gray-500 font-semibold">{uploading ? "Uploading..." : "Click to upload image"}</p>
+                                <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
                             </div>
-                        </div>
+                        )}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleMainImageUpload}
+                            className="hidden"
+                            accept="image/*"
+                        />
                     </div>
 
-                    <button className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg">
-                        <Save size={20} /> Save Changes
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving || uploading}
+                        className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                        Save Changes
                     </button>
                 </div>
             </div>
         </div>
     );
 }
-
-import { X } from "lucide-react";

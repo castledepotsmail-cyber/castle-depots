@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ShoppingCart, Heart, Star, Minus, Plus, Share2, Loader2 } from "lucide-react";
+import { ShoppingCart, Heart, Star, Minus, Plus, Share2, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCartStore, Product } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -10,6 +10,11 @@ import { useParams } from "next/navigation";
 import { productService } from "@/services/productService";
 import ProductCard from "@/components/product/ProductCard";
 import Image from "next/image";
+
+interface ProductImage {
+    id: string;
+    image: string;
+}
 
 interface ProductDetails extends Product {
     description: string;
@@ -19,6 +24,7 @@ interface ProductDetails extends Product {
         slug: string;
     };
     stock_quantity: number;
+    images?: ProductImage[];
 }
 
 export default function ProductDetailsPage() {
@@ -29,6 +35,7 @@ export default function ProductDetailsPage() {
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const addItem = useCartStore((state) => state.addItem);
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
@@ -39,6 +46,7 @@ export default function ProductDetailsPage() {
             try {
                 const data = await productService.getProduct(id);
                 setProduct(data);
+                setSelectedImage(data.image); // Default to main image
 
                 // Fetch related products if category is available
                 if (data.category) {
@@ -80,12 +88,16 @@ export default function ProductDetailsPage() {
     }
 
     const isWishlisted = isInWishlist(product.id);
+    const isOutOfStock = product.stock_quantity <= 0;
+    const maxQuantity = product.stock_quantity;
 
     const handleAddToCart = () => {
+        if (isOutOfStock) return;
         // Simple loop to add quantity
         for (let i = 0; i < quantity; i++) {
             addItem(product);
         }
+        alert("Added to cart!"); // Simple feedback
     };
 
     const toggleWishlist = () => {
@@ -95,6 +107,12 @@ export default function ProductDetailsPage() {
             addToWishlist(product);
         }
     };
+
+    // Combine main image and additional images
+    const allImages = [
+        { id: 'main', image: product.image },
+        ...(product.images || [])
+    ].filter(img => img.image); // Filter out empty
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -109,21 +127,42 @@ export default function ProductDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
                     {/* Image Gallery */}
                     <div className="space-y-4">
-                        <div className="aspect-square bg-white rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center relative">
+                        <div className="aspect-square bg-white rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center relative shadow-sm">
                             {product.discountPrice && (
-                                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
                                     {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
                                 </div>
                             )}
                             <Image
-                                src={product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
+                                src={selectedImage || product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
                                 alt={product.name}
                                 fill
-                                className="object-cover"
+                                className="object-contain p-4"
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 priority
                             />
                         </div>
+
+                        {/* Thumbnails */}
+                        {allImages.length > 1 && (
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={img.id || idx}
+                                        onClick={() => setSelectedImage(img.image)}
+                                        className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${selectedImage === img.image ? 'border-brand-blue ring-2 ring-brand-blue/20' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        <Image
+                                            src={img.image}
+                                            alt={`${product.name} view ${idx + 1}`}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Product Info */}
@@ -139,7 +178,16 @@ export default function ProductDetailsPage() {
                                 <Star size={20} fill="currentColor" className="text-gray-300" />
                             </div>
                             <span className="text-gray-500 text-sm">(4.0 Reviews)</span>
-                            <span className="text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded">In Stock</span>
+
+                            {isOutOfStock ? (
+                                <span className="text-red-600 font-semibold text-sm bg-red-50 px-2 py-1 rounded flex items-center gap-1">
+                                    <AlertCircle size={14} /> Out of Stock
+                                </span>
+                            ) : (
+                                <span className="text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded">
+                                    In Stock ({product.stock_quantity} available)
+                                </span>
+                            )}
                         </div>
 
                         <div className="mb-8">
@@ -162,14 +210,16 @@ export default function ProductDetailsPage() {
                             <div className="flex items-center border border-gray-300 rounded-full w-max">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="p-3 hover:bg-gray-100 rounded-l-full transition-colors"
+                                    disabled={isOutOfStock}
+                                    className="p-3 hover:bg-gray-100 rounded-l-full transition-colors disabled:opacity-50"
                                 >
                                     <Minus size={20} />
                                 </button>
                                 <span className="w-12 text-center font-bold text-lg">{quantity}</span>
                                 <button
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="p-3 hover:bg-gray-100 rounded-r-full transition-colors"
+                                    onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                                    disabled={isOutOfStock || quantity >= maxQuantity}
+                                    className="p-3 hover:bg-gray-100 rounded-r-full transition-colors disabled:opacity-50"
                                 >
                                     <Plus size={20} />
                                 </button>
@@ -177,9 +227,13 @@ export default function ProductDetailsPage() {
 
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 bg-brand-blue text-white py-3 px-8 rounded-full font-bold hover:bg-brand-gold hover:text-brand-blue transition-all shadow-lg flex items-center justify-center gap-2"
+                                disabled={isOutOfStock}
+                                className={`flex-1 py-3 px-8 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${isOutOfStock
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-brand-blue text-white hover:bg-brand-gold hover:text-brand-blue'
+                                    }`}
                             >
-                                <ShoppingCart size={20} /> Add to Cart
+                                <ShoppingCart size={20} /> {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                             </button>
 
                             <button

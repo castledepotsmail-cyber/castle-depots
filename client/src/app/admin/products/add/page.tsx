@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Upload, Save, Loader2, X } from "lucide-react";
+import { ArrowLeft, Upload, Save, Loader2, X, Plus } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { productService, Category } from "@/services/productService";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ export default function AddProductPage() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const multiFileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -24,7 +25,8 @@ export default function AddProductPage() {
         category: "",
         is_active: true,
         image_main: "",
-        sku: "" // Optional, backend generates if empty usually, but let's keep it
+        uploaded_images: [] as string[], // Additional images
+        sku: ""
     });
 
     useEffect(() => {
@@ -47,7 +49,7 @@ export default function AddProductPage() {
         }));
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
 
         const file = e.target.files[0];
@@ -56,7 +58,7 @@ export default function AddProductPage() {
         try {
             const newBlob = await upload(file.name, file, {
                 access: 'public',
-                handleUploadUrl: '/api/upload', // We need to create this route!
+                handleUploadUrl: '/api/upload',
             });
             setFormData(prev => ({ ...prev, image_main: newBlob.url }));
         } catch (error) {
@@ -65,6 +67,42 @@ export default function AddProductPage() {
         } finally {
             setUploading(false);
         }
+    };
+
+    const handleAdditionalImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        setUploading(true);
+        const files = Array.from(e.target.files);
+        const newUrls: string[] = [];
+
+        try {
+            // Upload sequentially or parallel
+            for (const file of files) {
+                const newBlob = await upload(file.name, file, {
+                    access: 'public',
+                    handleUploadUrl: '/api/upload',
+                });
+                newUrls.push(newBlob.url);
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                uploaded_images: [...prev.uploaded_images, ...newUrls]
+            }));
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload some images.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const removeAdditionalImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            uploaded_images: prev.uploaded_images.filter((_, i) => i !== index)
+        }));
     };
 
     const handleSubmit = async () => {
@@ -80,7 +118,8 @@ export default function AddProductPage() {
                 price: parseFloat(formData.price),
                 discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
                 stock_quantity: parseInt(formData.stock_quantity) || 0,
-                category_id: formData.category // API expects category_id usually, need to check serializer
+                category_id: formData.category,
+                uploaded_images: formData.uploaded_images // Send list of URLs
             };
 
             // Assuming productService.createProduct exists or using api directly
@@ -186,6 +225,41 @@ export default function AddProductPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Additional Images Section */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                        <h2 className="font-bold text-lg text-gray-800">Gallery Images</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                            {formData.uploaded_images.map((img, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                    <Image src={img} alt={`Gallery ${idx}`} fill className="object-cover" />
+                                    <button
+                                        onClick={() => removeAdditionalImage(idx)}
+                                        className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+
+                            <button
+                                onClick={() => multiFileInputRef.current?.click()}
+                                className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 hover:border-brand-blue hover:text-brand-blue transition-colors"
+                                disabled={uploading}
+                            >
+                                {uploading ? <Loader2 className="animate-spin" /> : <Plus size={24} />}
+                                <span className="text-xs font-semibold mt-1">Add Image</span>
+                            </button>
+                        </div>
+                        <input
+                            type="file"
+                            ref={multiFileInputRef}
+                            onChange={handleAdditionalImagesUpload}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                        />
+                    </div>
                 </div>
 
                 {/* Sidebar */}
@@ -223,7 +297,7 @@ export default function AddProductPage() {
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                        <h2 className="font-bold text-lg text-gray-800">Images</h2>
+                        <h2 className="font-bold text-lg text-gray-800">Main Image</h2>
 
                         {formData.image_main ? (
                             <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
@@ -252,7 +326,7 @@ export default function AddProductPage() {
                         <input
                             type="file"
                             ref={fileInputRef}
-                            onChange={handleImageUpload}
+                            onChange={handleMainImageUpload}
                             className="hidden"
                             accept="image/*"
                         />
