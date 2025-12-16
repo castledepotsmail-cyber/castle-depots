@@ -96,9 +96,16 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <button
                         onClick={(e) => {
                             e.preventDefault();
-                            addItem(product);
+                            if (product.stock_quantity > 0) {
+                                addItem(product);
+                            }
                         }}
-                        className="bg-brand-blue text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-all shadow-md hover:shadow-lg transform active:scale-95"
+                        disabled={product.stock_quantity <= 0}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md transform active:scale-95 ${product.stock_quantity > 0
+                                ? 'bg-brand-blue text-white hover:bg-brand-gold hover:text-brand-blue hover:shadow-lg'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                        title={product.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
                     >
                         <ShoppingCart size={18} />
                     </button>

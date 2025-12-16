@@ -7,6 +7,7 @@ export interface Product {
     price: number;
     image: string;
     discountPrice?: number;
+    stock_quantity: number;
     average_rating?: number;
     review_count?: number;
 }
@@ -34,6 +35,10 @@ export const useCartStore = create<CartState>()(
                 const existingItem = items.find((item) => item.id === product.id);
 
                 if (existingItem) {
+                    if (existingItem.quantity + 1 > product.stock_quantity) {
+                        alert(`Sorry, only ${product.stock_quantity} items available in stock.`);
+                        return;
+                    }
                     set({
                         items: items.map((item) =>
                             item.id === product.id
@@ -42,6 +47,10 @@ export const useCartStore = create<CartState>()(
                         ),
                     });
                 } else {
+                    if (product.stock_quantity < 1) {
+                        alert("Sorry, this item is out of stock.");
+                        return;
+                    }
                     set({ items: [...items, { ...product, quantity: 1 }] });
                 }
             },
@@ -49,12 +58,24 @@ export const useCartStore = create<CartState>()(
                 set({ items: get().items.filter((item) => item.id !== productId) });
             },
             updateQuantity: (productId, quantity) => {
+                const items = get().items;
+                const item = items.find((i) => i.id === productId);
+
+                if (!item) return;
+
                 if (quantity <= 0) {
                     get().removeItem(productId);
+                } else if (quantity > item.stock_quantity) {
+                    alert(`Sorry, only ${item.stock_quantity} items available in stock.`);
+                    set({
+                        items: items.map((i) =>
+                            i.id === productId ? { ...i, quantity: item.stock_quantity } : i
+                        ),
+                    });
                 } else {
                     set({
-                        items: get().items.map((item) =>
-                            item.id === productId ? { ...item, quantity } : item
+                        items: items.map((i) =>
+                            i.id === productId ? { ...i, quantity } : i
                         ),
                     });
                 }
