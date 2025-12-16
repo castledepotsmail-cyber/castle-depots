@@ -251,7 +251,23 @@ export default function ProductDetailsPage() {
                         </div>
 
                         <div className="flex items-center gap-4 text-sm text-gray-500 border-t border-gray-100 pt-6">
-                            <span className="flex items-center gap-2"><Share2 size={16} /> Share this product</span>
+                            <button
+                                onClick={() => {
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: product.name,
+                                            text: `Check out ${product.name} on Castle Depots!`,
+                                            url: window.location.href,
+                                        }).catch(console.error);
+                                    } else {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert("Link copied to clipboard!");
+                                    }
+                                }}
+                                className="flex items-center gap-2 hover:text-brand-blue transition-colors"
+                            >
+                                <Share2 size={16} /> Share this product
+                            </button>
                             <span>SKU: {product.id.slice(0, 8).toUpperCase()}</span>
                             <span>Category: {product.category?.name}</span>
                         </div>
