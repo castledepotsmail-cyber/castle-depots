@@ -21,6 +21,8 @@ export default function OrderDetailsPage() {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const { user } = useAuthStore();
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedProductForReview, setSelectedProductForReview] = useState<{ id: string, name: string } | null>(null);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -80,9 +82,6 @@ export default function OrderDetailsPage() {
         { label: "Shipped", icon: Truck, step: 3 },
         { label: "Delivered", icon: MapPin, step: 4 },
     ];
-
-    const [reviewModalOpen, setReviewModalOpen] = useState(false);
-    const [selectedProductForReview, setSelectedProductForReview] = useState<{ id: string, name: string } | null>(null);
 
     const openReviewModal = (product: { id: string, name: string }) => {
         setSelectedProductForReview(product);
@@ -277,7 +276,6 @@ function ReviewModal({ product, onClose }: { product: { id: string, name: string
     const [comment, setComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
-    const { productService } = require("@/services/productService"); // Dynamic import to avoid circular dep issues if any, or just standard import
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
