@@ -81,6 +81,14 @@ export default function OrderDetailsPage() {
         { label: "Delivered", icon: MapPin, step: 4 },
     ];
 
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedProductForReview, setSelectedProductForReview] = useState<{ id: string, name: string } | null>(null);
+
+    const openReviewModal = (product: { id: string, name: string }) => {
+        setSelectedProductForReview(product);
+        setReviewModalOpen(true);
+    };
+
     return (
         <div className="space-y-6">
             <Link href="/dashboard/orders" className="inline-flex items-center gap-2 text-brand-blue font-semibold hover:underline">
@@ -88,12 +96,12 @@ export default function OrderDetailsPage() {
             </Link>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
                     <div>
                         <h1 className="font-display text-2xl font-bold text-gray-800">Order #{order.id.slice(0, 8)}...</h1>
                         <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <span className={`px-4 py-2 rounded-full text-sm font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                             order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
                                 order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
@@ -108,7 +116,7 @@ export default function OrderDetailsPage() {
                                         const { generateReceipt } = await import("@/utils/receiptGenerator");
                                         generateReceipt(order, 'view');
                                     }}
-                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-md"
+                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-md text-sm whitespace-nowrap"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
@@ -121,7 +129,7 @@ export default function OrderDetailsPage() {
                                         const { generateReceipt } = await import("@/utils/receiptGenerator");
                                         generateReceipt(order);
                                     }}
-                                    className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
+                                    className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md text-sm whitespace-nowrap"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -138,9 +146,9 @@ export default function OrderDetailsPage() {
                 {/* Payment Alert for POD */}
                 {needsPayment && (
                     <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <CreditCard className="text-orange-600" size={24} />
+                                <CreditCard className="text-orange-600 flex-shrink-0" size={24} />
                                 <div>
                                     <h3 className="font-bold text-orange-900">Payment Required</h3>
                                     <p className="text-sm text-orange-700">Your order has been delivered. Please complete your payment.</p>
@@ -153,7 +161,7 @@ export default function OrderDetailsPage() {
                                 text="Pay Now"
                                 onSuccess={handlePaymentSuccess}
                                 onClose={() => console.log("Payment closed")}
-                                className="bg-brand-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg"
+                                className="bg-brand-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg w-full md:w-auto justify-center"
                             />
                         </div>
                     </div>
@@ -161,9 +169,9 @@ export default function OrderDetailsPage() {
 
                 {/* Tracking Timeline */}
                 {order.status !== 'cancelled' && (
-                    <div className="mb-8">
+                    <div className="mb-8 overflow-x-auto pb-4">
                         <h2 className="font-bold text-lg text-gray-800 mb-6">Order Tracking</h2>
-                        <div className="relative">
+                        <div className="relative min-w-[300px]">
                             <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200">
                                 <div
                                     className="h-full bg-brand-blue transition-all duration-500"
@@ -197,24 +205,36 @@ export default function OrderDetailsPage() {
                     <h2 className="font-bold text-lg text-gray-800 mb-4">Items in Order</h2>
                     <div className="space-y-4">
                         {order.items.map((item: any) => (
-                            <div key={item.id} className="flex gap-4 border-b border-gray-50 pb-4 last:border-0 last:pb-0">
-                                <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
-                                    {item.product.image_main ? (
-                                        <Image
-                                            src={item.product.image_main}
-                                            alt={item.product.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
-                                    )}
+                            <div key={item.id} className="flex flex-col sm:flex-row gap-4 border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                                <div className="flex gap-4 flex-1">
+                                    <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
+                                        {item.product.image_main ? (
+                                            <Image
+                                                src={item.product.image_main}
+                                                alt={item.product.name}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">{item.product.name}</h3>
+                                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                        <p className="font-bold text-brand-blue mt-1">KES {parseFloat(item.price).toLocaleString()}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{item.product.name}</h3>
-                                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                    <p className="font-bold text-brand-blue mt-1">KES {parseFloat(item.price).toLocaleString()}</p>
-                                </div>
+                                {order.status === 'delivered' && (
+                                    <div className="flex items-center sm:justify-end">
+                                        <button
+                                            onClick={() => openReviewModal(item.product)}
+                                            className="text-sm font-bold text-brand-blue hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors border border-brand-blue/20"
+                                        >
+                                            Write Review
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -239,6 +259,112 @@ export default function OrderDetailsPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Review Modal */}
+            {reviewModalOpen && selectedProductForReview && (
+                <ReviewModal
+                    product={selectedProductForReview}
+                    onClose={() => setReviewModalOpen(false)}
+                />
+            )}
+        </div>
+    );
+}
+
+function ReviewModal({ product, onClose }: { product: { id: string, name: string }, onClose: () => void }) {
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
+    const { productService } = require("@/services/productService"); // Dynamic import to avoid circular dep issues if any, or just standard import
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setError("");
+
+        try {
+            await productService.createReview(product.id, rating, comment);
+            alert("Review submitted successfully!");
+            onClose();
+        } catch (err: any) {
+            console.error(err);
+            if (err.response && err.response.data) {
+                const msg = typeof err.response.data === 'string' ? err.response.data :
+                    (err.response.data[0] || JSON.stringify(err.response.data));
+                setError(msg);
+            } else {
+                setError("Failed to submit review.");
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                >
+                    ✕
+                </button>
+                <h3 className="font-bold text-xl text-gray-800 mb-2">Review Product</h3>
+                <p className="text-sm text-gray-500 mb-6">How was your experience with <span className="font-semibold">{product.name}</span>?</p>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Rating</label>
+                        <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setRating(star)}
+                                    className={`text-3xl transition-colors ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                >
+                                    ★
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Your Review</label>
+                        <textarea
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            required
+                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-32 resize-none"
+                            placeholder="Tell us what you liked or didn't like..."
+                        ></textarea>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-2 rounded-lg font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="flex-1 bg-brand-blue text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        >
+                            {submitting ? "Submitting..." : "Submit Review"}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
