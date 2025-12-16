@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { orderService } from "@/services/orderService";
+import { productService } from "@/services/productService";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
