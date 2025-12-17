@@ -64,7 +64,8 @@ export default function Home() {
       try {
         const campaigns = await campaignService.getActiveCampaigns();
         for (const campaign of campaigns) {
-          const banner = campaign.banners?.find((b: any) => b.type === 'flash_sale' && b.is_active);
+          // Check for 'flash_sale' or 'hero_slide' types for the main promo section
+          const banner = campaign.banners?.find((b: any) => (b.type === 'flash_sale' || b.type === 'hero_slide') && b.is_active);
           if (banner) {
             setActiveFlashSale({ ...banner, campaign });
             break;
