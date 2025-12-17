@@ -10,6 +10,7 @@ export interface CampaignBanner {
     link: string;
     button_text: string;
     display_pages: string[]; // or JSON
+    theme_mode?: string;
 }
 
 export interface Campaign {

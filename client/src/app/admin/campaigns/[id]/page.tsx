@@ -395,6 +395,21 @@ export default function CampaignEditorPage() {
                                 </select>
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Theme Mode</label>
+                                <select
+                                    value={editingBanner.theme_mode || 'inherit'}
+                                    onChange={e => setEditingBanner({ ...editingBanner, theme_mode: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                                >
+                                    <option value="inherit">Inherit from Campaign</option>
+                                    <option value="default">Default Blue/Gold</option>
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="red">Red Mode (Flash Sale)</option>
+                                    <option value="green">Green Mode (Holiday)</option>
+                                    <option value="custom">Custom Colors</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Heading</label>
                                 <input
                                     type="text"

@@ -31,7 +31,7 @@ export default function CampaignBanner() {
     if (!isVisible || !activeBanner) return null;
 
     // Determine colors based on campaign theme
-    const theme = activeBanner.campaign.theme_mode;
+    const theme = (activeBanner.theme_mode && activeBanner.theme_mode !== 'inherit') ? activeBanner.theme_mode : activeBanner.campaign.theme_mode;
     let bgClass = "bg-brand-blue";
     let textClass = "text-white";
     let btnClass = "bg-white text-brand-blue";

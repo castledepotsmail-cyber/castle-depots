@@ -59,6 +59,16 @@ class CampaignBanner(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     is_active = models.BooleanField(default=True)
     
+    THEME_CHOICES = (
+        ('inherit', 'Inherit from Campaign'),
+        ('default', 'Default Blue/Gold'),
+        ('dark', 'Dark Mode'),
+        ('red', 'Red Mode (Flash Sale)'),
+        ('green', 'Green Mode (Holiday)'),
+        ('custom', 'Custom Colors'),
+    )
+    theme_mode = models.CharField(max_length=20, choices=THEME_CHOICES, default='inherit')
+    
     # Content
     heading = models.CharField(max_length=255, blank=True)
     subheading = models.TextField(blank=True)

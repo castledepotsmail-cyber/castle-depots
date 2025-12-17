@@ -185,7 +185,7 @@ export default function Home() {
         {/* Special Offer Banner - Dynamic */}
         {activeFlashSale && (
           <section className="py-8 container mx-auto px-4 relative z-10">
-            <div className={`relative rounded-3xl overflow-hidden shadow-2xl group ${activeFlashSale.campaign.theme_mode === 'red' ? 'bg-red-600' : 'bg-brand-blue/80'} backdrop-blur-sm`}>
+            <div className={`relative rounded-3xl overflow-hidden shadow-2xl group ${(activeFlashSale.theme_mode !== 'inherit' && activeFlashSale.theme_mode) ? (activeFlashSale.theme_mode === 'red' ? 'bg-red-600' : activeFlashSale.theme_mode === 'green' ? 'bg-green-600' : activeFlashSale.theme_mode === 'dark' ? 'bg-gray-900' : 'bg-brand-blue/80') : (activeFlashSale.campaign.theme_mode === 'red' ? 'bg-red-600' : activeFlashSale.campaign.theme_mode === 'green' ? 'bg-green-600' : activeFlashSale.campaign.theme_mode === 'dark' ? 'bg-gray-900' : 'bg-brand-blue/80')} backdrop-blur-sm`}>
               {/* Background Image */}
               <div className="absolute inset-0 z-0">
                 <img
@@ -193,7 +193,7 @@ export default function Home() {
                   alt="Special Offer"
                   className="w-full h-full object-cover opacity-40 mix-blend-overlay"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-r ${activeFlashSale.campaign.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40'}`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-r ${(activeFlashSale.theme_mode !== 'inherit' && activeFlashSale.theme_mode) ? (activeFlashSale.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : activeFlashSale.theme_mode === 'green' ? 'from-green-900 via-green-600/70 to-green-500/40' : activeFlashSale.theme_mode === 'dark' ? 'from-gray-900 via-gray-800/70 to-gray-700/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40') : (activeFlashSale.campaign.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : activeFlashSale.campaign.theme_mode === 'green' ? 'from-green-900 via-green-600/70 to-green-500/40' : activeFlashSale.campaign.theme_mode === 'dark' ? 'from-gray-900 via-gray-800/70 to-gray-700/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40')}`}></div>
               </div>
 
               <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-12 gap-8">
@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
 
                 {/* Carousel */}
-                <FlashSaleCarousel campaign={activeFlashSale.campaign} />
+                <FlashSaleCarousel campaign={activeFlashSale.campaign} bannerTheme={activeFlashSale.theme_mode} />
               </div>
             </div>
           </section>

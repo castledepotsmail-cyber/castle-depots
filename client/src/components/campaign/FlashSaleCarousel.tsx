@@ -14,7 +14,7 @@ const defaultImages = [
     "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=600",
 ];
 
-export default function FlashSaleCarousel({ campaign }: { campaign?: Campaign }) {
+export default function FlashSaleCarousel({ campaign, bannerTheme }: { campaign?: Campaign, bannerTheme?: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -60,11 +60,15 @@ export default function FlashSaleCarousel({ campaign }: { campaign?: Campaign })
     // Duplicate for infinite scroll
     const carouselItems = [...displayItems, ...displayItems];
 
+    // Determine theme
+    const activeTheme = (bannerTheme && bannerTheme !== 'inherit') ? bannerTheme : campaign?.theme_mode;
+    const gradientFrom = activeTheme === 'red' ? 'from-red-600/60' : activeTheme === 'green' ? 'from-green-600/60' : activeTheme === 'dark' ? 'from-gray-900/60' : 'from-brand-blue/60';
+
     return (
         <div className="w-full md:w-1/2 h-full relative overflow-hidden flex items-center group">
             {/* Gradient Overlays for smooth fade edges */}
-            <div className={`absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r ${campaign?.theme_mode === 'red' ? 'from-red-600/60' : 'from-brand-blue/60'} to-transparent pointer-events-none`}></div>
-            <div className={`absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l ${campaign?.theme_mode === 'red' ? 'from-red-600/60' : 'from-brand-blue/60'} to-transparent pointer-events-none`}></div>
+            <div className={`absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r ${gradientFrom} to-transparent pointer-events-none`}></div>
+            <div className={`absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l ${gradientFrom} to-transparent pointer-events-none`}></div>
 
             <div className="flex gap-4 animate-scroll hover:[animation-play-state:paused] w-max">
                 {carouselItems.map((item: any, index) => (
