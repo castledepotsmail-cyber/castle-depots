@@ -97,14 +97,18 @@ export default function AdminDashboard() {
                             {stats.recent_orders.map((order: any) => (
                                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
-                                    <td className="px-6 py-4 text-gray-600">{order.user || 'Guest'}</td>
+                                    <td className="px-6 py-4 text-gray-600">
+                                        {order.user && typeof order.user === 'object'
+                                            ? `${order.user.first_name || ''} ${order.user.last_name || ''}`.trim() || order.user.email || order.user.username
+                                            : 'Guest'}
+                                    </td>
                                     <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                                order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
-                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                        'bg-blue-100 text-blue-700'
+                                            order.status === 'processing' || order.status === 'shipped' ? 'bg-yellow-100 text-yellow-700' :
+                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                    'bg-blue-100 text-blue-700'
                                             }`}>
                                             {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.replace('_', ' ').slice(1)}
                                         </span>
