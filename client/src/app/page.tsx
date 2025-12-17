@@ -13,9 +13,12 @@ import { useCartStore } from "@/store/cartStore";
 import FlashSaleCarousel from "@/components/campaign/FlashSaleCarousel";
 
 import HeroBackground from "@/components/common/HeroBackground";
+import ProductCarousel from "@/components/product/ProductCarousel";
 
 export default function Home() {
   const [topDeals, setTopDeals] = useState<Product[]>([]);
+  const [trendingDeals, setTrendingDeals] = useState<Product[]>([]);
+  const [latestDeals, setLatestDeals] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
@@ -23,12 +26,26 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dealsData = await productService.getProducts({ on_sale: 'true', ordering: '-created_at' });
-        if (Array.isArray(dealsData)) {
-          setTopDeals(dealsData.slice(0, 4));
+        // Top Deals (On Sale)
+        const topDealsData = await productService.getProducts({ on_sale: 'true', ordering: '-created_at' });
+        if (Array.isArray(topDealsData)) {
+          setTopDeals(topDealsData.slice(0, 15));
         }
+
+        // Trending Deals (Recently Updated as proxy)
+        const trendingDealsData = await productService.getProducts({ ordering: '-updated_at' });
+        if (Array.isArray(trendingDealsData)) {
+          setTrendingDeals(trendingDealsData.slice(0, 15));
+        }
+
+        // Latest Deals (Newest)
+        const latestDealsData = await productService.getProducts({ ordering: '-created_at' });
+        if (Array.isArray(latestDealsData)) {
+          setLatestDeals(latestDealsData.slice(0, 15));
+        }
+
       } catch (error) {
-        console.error("Failed to fetch top deals", error);
+        console.error("Failed to fetch deals", error);
       }
 
       try {
@@ -173,64 +190,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Top Deals */}
-        <section className="py-12 container mx-auto px-4 bg-white/90 backdrop-blur-sm relative z-10 rounded-xl my-8">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="font-display text-2xl font-bold">Top Deals</h2>
-            <Link href="/shop" className="text-brand-blue font-semibold hover:underline">View All</Link>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {topDeals.map((product) => (
-              <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-shadow border border-gray-100 flex flex-col relative">
-                {product.discountPrice && (
-                  <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded absolute top-4 left-4 z-10">
-                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                  </div>
-                )}
-                <Link href={`/product/${product.id}`} className="h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden group">
-                  <img
-                    src={product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </Link>
-                <Link href={`/product/${product.id}`}>
-                  <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 hover:text-brand-blue transition-colors">
-                    {product.name}
-                  </h3>
-                </Link>
-                <div className="mt-auto pt-2">
-                  {product.discountPrice ? (
-                    <div className="flex flex-col">
-                      <p className="text-xs text-gray-400 line-through">KES {product.price.toLocaleString()}</p>
-                      <div className="flex justify-between items-center">
-                        <p className="text-lg font-bold text-brand-blue">KES {product.discountPrice.toLocaleString()}</p>
-                        <button
-                          onClick={() => addItem(product)}
-                          className="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-colors">
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between items-center">
-                      <p className="text-lg font-bold text-brand-blue">KES {product.price.toLocaleString()}</p>
-                      <button
-                        onClick={() => addItem(product)}
-                        className="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-brand-blue transition-colors">
-                        +
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {topDeals.length === 0 && (
-              <div className="col-span-4 text-center text-gray-500 py-12">No deals found at the moment.</div>
-            )}
-          </div>
-        </section>
+        {/* Product Carousels */}
+        <ProductCarousel title="Top Deals" products={topDeals} viewAllLink="/shop?on_sale=true" />
+        <ProductCarousel title="Trending Deals" products={trendingDeals} viewAllLink="/shop" />
+        <ProductCarousel title="Latest Arrivals" products={latestDeals} viewAllLink="/shop?ordering=-created_at" />
       </main>
 
       <div className="relative z-10">
