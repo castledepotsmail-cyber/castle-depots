@@ -49,7 +49,9 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative">
       <HeroBackground />
-      <CampaignBanner />
+      <div className="relative z-10">
+        <CampaignBanner />
+      </div>
       <Navbar noSpacer={true} />
 
       <main className="flex-grow z-10">
@@ -231,7 +233,9 @@ export default function Home() {
         </section>
       </main>
 
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   );
 }
