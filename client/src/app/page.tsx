@@ -81,39 +81,7 @@ export default function Home() {
 
   // ... existing render ...
 
-  {/* Special Offer Banner - Dynamic */ }
-  {
-    activeFlashSale && (
-      <section className="py-8 container mx-auto px-4 relative z-10">
-        <div className={`relative rounded-3xl overflow-hidden shadow-2xl group ${activeFlashSale.campaign.theme_mode === 'red' ? 'bg-red-600' : 'bg-brand-blue/80'} backdrop-blur-sm`}>
-          {/* Background Image */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src={activeFlashSale.image || "/images/promo_bg.png"}
-              alt="Special Offer"
-              className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-            />
-            <div className={`absolute inset-0 bg-gradient-to-r ${activeFlashSale.campaign.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40'}`}></div>
-          </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-12 gap-8">
-            {/* Text Content */}
-            <div className="w-full md:w-1/2 flex flex-col items-start text-white">
-              <span className="bg-white text-brand-blue px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">Limited Time</span>
-              <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg leading-tight">{activeFlashSale.heading || "Flash Sale!"}</h2>
-              <p className="text-lg md:text-xl mb-8 font-medium max-w-md text-blue-100">{activeFlashSale.subheading || "Get up to 50% off on selected premium items. Don't miss out."}</p>
-              <Link href={activeFlashSale.link || "/shop"} className="bg-brand-gold text-brand-blue px-8 py-3 rounded-full font-bold hover:bg-white transition-all shadow-lg flex items-center gap-2 whitespace-nowrap hover:scale-105 active:scale-95">
-                {activeFlashSale.button_text || "View Offers"} <ArrowRight size={20} />
-              </Link>
-            </div>
-
-            {/* Carousel */}
-            <FlashSaleCarousel />
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -213,34 +181,37 @@ export default function Home() {
         </section>
 
         {/* Special Offer Banner */}
-        <section className="py-8 container mx-auto px-4 relative z-10">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl group bg-brand-blue/80 backdrop-blur-sm">
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
-              <img
-                src="/images/promo_bg.png"
-                alt="Special Offer"
-                className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/70 to-brand-blue/40"></div>
-            </div>
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-12 gap-8">
-              {/* Text Content */}
-              <div className="w-full md:w-1/2 flex flex-col items-start text-white">
-                <span className="bg-white text-brand-blue px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">Limited Time</span>
-                <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg leading-tight">Flash Sale!</h2>
-                <p className="text-lg md:text-xl mb-8 font-medium max-w-md text-blue-100">Get up to 50% off on selected premium items. Don't miss out.</p>
-                <button className="bg-brand-gold text-brand-blue px-8 py-3 rounded-full font-bold hover:bg-white transition-all shadow-lg flex items-center gap-2 whitespace-nowrap hover:scale-105 active:scale-95">
-                  View Offers <ArrowRight size={20} />
-                </button>
+        {/* Special Offer Banner - Dynamic */}
+        {activeFlashSale && (
+          <section className="py-8 container mx-auto px-4 relative z-10">
+            <div className={`relative rounded-3xl overflow-hidden shadow-2xl group ${activeFlashSale.campaign.theme_mode === 'red' ? 'bg-red-600' : 'bg-brand-blue/80'} backdrop-blur-sm`}>
+              {/* Background Image */}
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={activeFlashSale.image || "/images/promo_bg.png"}
+                  alt="Special Offer"
+                  className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-r ${activeFlashSale.campaign.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40'}`}></div>
               </div>
 
-              {/* Carousel */}
-              <FlashSaleCarousel />
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-12 gap-8">
+                {/* Text Content */}
+                <div className="w-full md:w-1/2 flex flex-col items-start text-white">
+                  <span className="bg-white text-brand-blue px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">Limited Time</span>
+                  <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg leading-tight">{activeFlashSale.heading || "Flash Sale!"}</h2>
+                  <p className="text-lg md:text-xl mb-8 font-medium max-w-md text-blue-100">{activeFlashSale.subheading || "Get up to 50% off on selected premium items. Don't miss out."}</p>
+                  <Link href={activeFlashSale.link || "/shop"} className="bg-brand-gold text-brand-blue px-8 py-3 rounded-full font-bold hover:bg-white transition-all shadow-lg flex items-center gap-2 whitespace-nowrap hover:scale-105 active:scale-95">
+                    {activeFlashSale.button_text || "View Offers"} <ArrowRight size={20} />
+                  </Link>
+                </div>
+
+                {/* Carousel */}
+                <FlashSaleCarousel />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Product Carousels */}
         <ProductCarousel title="Top Deals" products={topDeals} viewAllLink="/shop?on_sale=true" />
