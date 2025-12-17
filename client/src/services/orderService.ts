@@ -22,5 +22,10 @@ export const orderService = {
             paystack_ref: paystackRef
         });
         return response.data;
+    },
+
+    updateOrderStatus: async (id: string, status: string) => {
+        const response = await api.patch(`/orders/${id}/`, { status });
+        return response.data;
     }
 };
