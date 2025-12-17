@@ -59,7 +59,7 @@ export default function Home() {
               alt="Hero Background"
               className="w-full h-full object-cover opacity-40 mix-blend-overlay"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/80 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/50 to-transparent"></div>
           </div>
 
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
@@ -148,7 +148,7 @@ export default function Home() {
                 alt="Special Offer"
                 className="w-full h-full object-cover opacity-40 mix-blend-overlay"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/90 to-brand-blue/60"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/70 to-brand-blue/40"></div>
             </div>
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-12 gap-8">

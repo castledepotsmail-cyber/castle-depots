@@ -18,8 +18,8 @@ export default function FlashSaleCarousel({ images = defaultImages }: { images?:
     return (
         <div className="w-full md:w-1/2 h-full relative overflow-hidden flex items-center group">
             {/* Gradient Overlays for smooth fade edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-brand-blue/80 to-transparent pointer-events-none"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-brand-blue/80 to-transparent pointer-events-none"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-brand-blue/60 to-transparent pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-brand-blue/60 to-transparent pointer-events-none"></div>
 
             <div className="flex gap-4 animate-scroll hover:[animation-play-state:paused] w-max">
                 {carouselImages.map((src, index) => (
