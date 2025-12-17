@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
 
                 {/* Carousel */}
-                <FlashSaleCarousel />
+                <FlashSaleCarousel campaign={activeFlashSale.campaign} />
               </div>
             </div>
           </section>

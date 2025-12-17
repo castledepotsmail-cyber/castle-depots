@@ -28,6 +28,7 @@ export interface Campaign {
     target_category: string | null; // ID
     products: any[]; // Product objects
     banners: CampaignBanner[];
+    discount_percentage: number;
 }
 
 export const campaignService = {

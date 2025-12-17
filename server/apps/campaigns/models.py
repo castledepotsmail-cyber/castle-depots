@@ -35,6 +35,9 @@ class Campaign(models.Model):
     product_selection_type = models.CharField(max_length=20, choices=SELECTION_CHOICES, default='manual')
     target_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='campaigns')
     products = models.ManyToManyField(Product, related_name='campaigns', blank=True)
+    
+    # Discount
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text="Percentage off (0-100)")
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
@@ -64,8 +67,6 @@ class CampaignBanner(models.Model):
     button_text = models.CharField(max_length=50, blank=True, default="Shop Now")
     
     # Display Logic
-    # We'll store pages as a simple comma-separated string or JSON. JSON is better but SQLite sometimes tricky with JSONField in older Django versions. 
-    # Assuming standard Django JSONField is available (Django 3.0+).
     display_pages = models.JSONField(default=list, help_text="List of pages to show this banner e.g. ['/', '/shop']")
     
     def __str__(self):

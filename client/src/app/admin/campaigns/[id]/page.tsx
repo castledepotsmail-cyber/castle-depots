@@ -236,6 +236,18 @@ export default function CampaignEditorPage() {
                                     <option value="custom">Custom Colors</option>
                                 </select>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Percentage (%)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value={campaign.discount_percentage || 0}
+                                    onChange={e => setCampaign({ ...campaign, discount_percentage: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue/20 outline-none"
+                                />
+                            </div>
                             <div className="flex items-center pt-6">
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input

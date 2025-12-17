@@ -88,6 +88,53 @@ class ProductSerializer(serializers.ModelSerializer):
                 
         return instance
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        
+        # Calculate campaign discount
+        from django.utils import timezone
+        from apps.campaigns.models import Campaign
+        
+        now = timezone.now()
+        # Optimize: Prefetch or cache this if possible, but for now direct query is safer for correctness
+        active_campaigns = Campaign.objects.filter(
+            start_time__lte=now,
+            end_time__gte=now,
+            is_active=True
+        )
+        
+        best_discount = 0
+        
+        for campaign in active_campaigns:
+            is_included = False
+            if campaign.product_selection_type == 'all':
+                is_included = True
+            elif campaign.product_selection_type == 'category':
+                if instance.category_id == campaign.target_category_id:
+                    is_included = True
+            elif campaign.product_selection_type == 'manual':
+                # This might be N+1 query issue if listing many products. 
+                # Ideally we should prefetch campaigns on the viewset.
+                if campaign.products.filter(id=instance.id).exists():
+                    is_included = True
+            
+            if is_included:
+                if campaign.discount_percentage > best_discount:
+                    best_discount = campaign.discount_percentage
+        
+        if best_discount > 0:
+            original_price = float(instance.price)
+            discount_amount = original_price * (float(best_discount) / 100)
+            new_price = original_price - discount_amount
+            
+            # Check against existing discount_price
+            current_discount_price = float(ret['discount_price']) if ret['discount_price'] else None
+            
+            if current_discount_price is None or new_price < current_discount_price:
+                ret['discount_price'] = "{:.2f}".format(new_price)
+                
+        return ret
+
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.UUIDField(write_only=True)
