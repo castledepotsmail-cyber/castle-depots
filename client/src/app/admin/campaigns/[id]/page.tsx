@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { campaignService, Campaign, CampaignBanner } from "@/services/campaignService";
 import { productService } from "@/services/productService";
-import { ArrowLeft, Save, Plus, Trash2, Check, X, Layout, Image as ImageIcon, Type, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Check, X, Layout, Image as ImageIcon, Type, Link as LinkIcon, Edit } from "lucide-react";
 
 export default function CampaignEditorPage() {
     const router = useRouter();
