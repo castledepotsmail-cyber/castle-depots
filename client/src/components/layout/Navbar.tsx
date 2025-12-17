@@ -8,7 +8,7 @@ import { useAuthStore } from "@/store/authStore";
 import { authService } from "@/services/authService";
 import Notifications from "../common/Notifications";
 
-export default function Navbar() {
+export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +34,7 @@ export default function Navbar() {
     }, []);
 
     return (
-        <nav className="bg-brand-blue shadow-lg sticky top-0 z-50 mb-12">
+        <nav className={`bg-brand-blue shadow-lg sticky top-0 z-50 ${noSpacer ? '' : 'mb-12'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo Area with Round Bump */}

@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <CampaignBanner />
-      <Navbar />
+      <Navbar noSpacer={true} />
 
       <main className="flex-grow">
         {/* Hero Section */}
