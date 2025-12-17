@@ -11,12 +11,19 @@ export default function CampaignEditorPage() {
     const params = useParams();
     const isNew = params.id === 'create';
 
+    // Helper to get local ISO string for datetime-local input
+    const toLocalISOString = (dateStr?: string | Date) => {
+        const date = dateStr ? new Date(dateStr) : new Date();
+        const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        return d.toISOString().slice(0, 16);
+    };
+
     const [campaign, setCampaign] = useState<Partial<Campaign>>({
         title: '',
         slug: '',
         description: '',
-        start_time: new Date().toISOString().slice(0, 16),
-        end_time: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+        start_time: toLocalISOString(),
+        end_time: toLocalISOString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
         is_active: true,
         theme_mode: 'default',
         product_selection_type: 'manual',
@@ -41,8 +48,8 @@ export default function CampaignEditorPage() {
                 if (!isNew && params.id) {
                     const data = await campaignService.getCampaign(params.id as string);
                     // Format dates for input type="datetime-local"
-                    data.start_time = data.start_time.slice(0, 16);
-                    data.end_time = data.end_time.slice(0, 16);
+                    data.start_time = toLocalISOString(data.start_time);
+                    data.end_time = toLocalISOString(data.end_time);
                     setCampaign(data);
                 }
             } catch (error) {
@@ -57,10 +64,17 @@ export default function CampaignEditorPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+            // Convert local time back to UTC for API
+            const apiData = {
+                ...campaign,
+                start_time: new Date(campaign.start_time!).toISOString(),
+                end_time: new Date(campaign.end_time!).toISOString()
+            };
+
             if (isNew) {
-                await campaignService.createCampaign(campaign);
+                await campaignService.createCampaign(apiData);
             } else {
-                await campaignService.updateCampaign(params.id as string, campaign);
+                await campaignService.updateCampaign(params.id as string, apiData);
             }
             router.push('/admin/campaigns');
         } catch (error) {
