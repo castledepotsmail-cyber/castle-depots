@@ -158,7 +158,7 @@ export default function HeroBackground() {
     }, []);
 
     return (
-        <div ref={containerRef} className="absolute inset-0 z-0 overflow-hidden bg-brand-blue">
+        <div ref={containerRef} className="fixed inset-0 z-0 overflow-hidden bg-brand-blue">
             {/* Subtle Gradient Background Base */}
             <div className="absolute inset-0 bg-gradient-to-br from-brand-blue via-[#002a5c] to-brand-blue opacity-90"></div>
 

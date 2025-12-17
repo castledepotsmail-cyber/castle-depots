@@ -47,15 +47,23 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      <HeroBackground />
       <CampaignBanner />
       <Navbar noSpacer={true} />
 
-      <main className="flex-grow">
+      <main className="flex-grow z-10">
         {/* Hero Section */}
-        <section className="relative bg-brand-blue text-white py-20 md:py-32 overflow-hidden">
-          {/* Interactive Background */}
-          <HeroBackground />
+        <section className="relative text-white py-20 md:py-32 overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/images/hero_cover.png"
+              alt="Hero Background"
+              className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/50 to-transparent"></div>
+          </div>
 
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
             <div className="md:w-1/2">
@@ -96,7 +104,7 @@ export default function Home() {
         </section>
 
         {/* Categories */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white/90 backdrop-blur-sm relative z-10">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-3xl font-bold mb-10 text-center text-gray-800">Shop by Category</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -134,8 +142,8 @@ export default function Home() {
         </section>
 
         {/* Special Offer Banner */}
-        <section className="py-8 container mx-auto px-4">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl group bg-brand-blue">
+        <section className="py-8 container mx-auto px-4 relative z-10">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl group bg-brand-blue/80 backdrop-blur-sm">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
               <img
@@ -164,7 +172,7 @@ export default function Home() {
         </section>
 
         {/* Top Deals */}
-        <section className="py-12 container mx-auto px-4">
+        <section className="py-12 container mx-auto px-4 bg-white/90 backdrop-blur-sm relative z-10 rounded-xl my-8">
           <div className="flex justify-between items-end mb-8">
             <h2 className="font-display text-2xl font-bold">Top Deals</h2>
             <Link href="/shop" className="text-brand-blue font-semibold hover:underline">View All</Link>
