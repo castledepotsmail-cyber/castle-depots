@@ -1,9 +1,15 @@
 from rest_framework import serializers
-from .models import Campaign
+from .models import Campaign, CampaignBanner
 from apps.products.serializers import ProductSerializer
+
+class CampaignBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignBanner
+        fields = '__all__'
 
 class CampaignSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)
+    banners = CampaignBannerSerializer(many=True, read_only=True)
     product_ids = serializers.ListField(
         child=serializers.UUIDField(),
         write_only=True,

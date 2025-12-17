@@ -2,57 +2,84 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Timer } from "lucide-react";
+import { X, Timer } from "lucide-react";
+import { campaignService } from "@/services/campaignService";
 
 export default function CampaignBanner() {
-    const [timeLeft, setTimeLeft] = useState({
-        hours: 12,
-        minutes: 45,
-        seconds: 30,
-    });
+    const [isVisible, setIsVisible] = useState(true);
+    const [activeBanner, setActiveBanner] = useState<any>(null);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev.seconds > 0) {
-                    return { ...prev, seconds: prev.seconds - 1 };
-                } else if (prev.minutes > 0) {
-                    return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-                } else if (prev.hours > 0) {
-                    return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-                } else {
-                    return prev;
+        const fetchActiveCampaigns = async () => {
+            try {
+                const campaigns = await campaignService.getActiveCampaigns();
+                // Find the first campaign with an active 'top_bar' banner
+                for (const campaign of campaigns) {
+                    const topBar = campaign.banners?.find((b: any) => b.type === 'top_bar' && b.is_active);
+                    if (topBar) {
+                        setActiveBanner({ ...topBar, campaign });
+                        break;
+                    }
                 }
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
+            } catch (error) {
+                console.error("Failed to fetch active campaigns", error);
+            }
+        };
+        fetchActiveCampaigns();
     }, []);
 
+    if (!isVisible || !activeBanner) return null;
+
+    // Determine colors based on campaign theme
+    const theme = activeBanner.campaign.theme_mode;
+    let bgClass = "bg-brand-blue";
+    let textClass = "text-white";
+    let btnClass = "bg-white text-brand-blue";
+
+    if (theme === 'red') {
+        bgClass = "bg-red-600";
+        btnClass = "bg-white text-red-600";
+    } else if (theme === 'green') {
+        bgClass = "bg-green-600";
+        btnClass = "bg-white text-green-600";
+    } else if (theme === 'dark') {
+        bgClass = "bg-gray-900";
+        btnClass = "bg-white text-gray-900";
+    }
+
     return (
-        <div className="bg-red-600 text-white py-3 px-4 flex flex-col md:flex-row justify-between items-center gap-2">
-            <div className="flex items-center gap-2">
-                <span className="bg-white text-red-600 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider animate-pulse">
-                    Flash Sale
+        <div className={`${bgClass} ${textClass} py-3 px-4 flex flex-col md:flex-row justify-between items-center gap-2 relative z-50 transition-colors duration-300`}>
+            <div className="flex items-center gap-2 justify-center w-full md:w-auto">
+                <span className={`${btnClass} px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider animate-pulse`}>
+                    {activeBanner.heading || "Special Offer"}
                 </span>
-                <p className="font-bold text-sm md:text-base">
-                    Get 50% OFF on all Kitchenware! Limited time only.
+                <p className="font-bold text-sm md:text-base text-center md:text-left">
+                    {activeBanner.subheading}
                 </p>
             </div>
 
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 font-mono font-bold text-lg">
+                {/* Optional Timer if we want to keep it, but for now generic */}
+                {/* <div className="flex items-center gap-1 font-mono font-bold text-lg">
                     <Timer size={20} className="mr-1" />
-                    <span>{String(timeLeft.hours).padStart(2, '0')}</span>:
-                    <span>{String(timeLeft.minutes).padStart(2, '0')}</span>:
-                    <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
-                </div>
-                <Link
-                    href="/shop"
-                    className="bg-white text-red-600 px-4 py-1 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors"
+                    <span>12:00:00</span>
+                </div> */}
+
+                {activeBanner.link && (
+                    <Link
+                        href={activeBanner.link}
+                        className={`${btnClass} px-4 py-1 rounded-full text-sm font-bold hover:opacity-90 transition-opacity whitespace-nowrap`}
+                    >
+                        {activeBanner.button_text || "Shop Now"}
+                    </Link>
+                )}
+
+                <button
+                    onClick={() => setIsVisible(false)}
+                    className="p-1 hover:bg-black/10 rounded-full transition-colors"
                 >
-                    Shop Now
-                </Link>
+                    <X size={16} />
+                </button>
             </div>
         </div>
     );

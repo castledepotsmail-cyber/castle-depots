@@ -1,32 +1,26 @@
 "use client";
 
-import { Plus, Calendar, Megaphone, Trash2, Edit, Loader2, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { adminService, Campaign } from "@/services/adminService";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Plus, Search, Edit, Trash2, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { campaignService, Campaign } from "@/services/campaignService";
+import { format } from "date-fns";
 
 export default function AdminCampaignsPage() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        start_time: "",
-        end_time: "",
-        discount_percentage: "",
-        is_active: true
-    });
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        fetchCampaigns();
+        loadCampaigns();
     }, []);
 
-    const fetchCampaigns = async () => {
+    const loadCampaigns = async () => {
         try {
-            const data = await adminService.getCampaigns();
-            setCampaigns(data.results || data);
+            const data = await campaignService.getCampaigns();
+            setCampaigns(data);
         } catch (error) {
-            console.error("Failed to fetch campaigns", error);
+            console.error("Failed to load campaigns", error);
         } finally {
             setLoading(false);
         }
@@ -35,153 +29,101 @@ export default function AdminCampaignsPage() {
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this campaign?")) {
             try {
-                await adminService.deleteCampaign(id);
-                setCampaigns(campaigns.filter(c => c.id !== id));
+                await campaignService.deleteCampaign(id);
+                loadCampaigns();
             } catch (error) {
                 console.error("Failed to delete campaign", error);
-                alert("Failed to delete campaign");
             }
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const newCampaign = await adminService.createCampaign({
-                ...formData,
-                discount_percentage: formData.discount_percentage ? parseFloat(formData.discount_percentage) : null
-            });
-            setCampaigns([newCampaign, ...campaigns]);
-            setIsModalOpen(false);
-            setFormData({ title: "", description: "", start_time: "", end_time: "", discount_percentage: "", is_active: true });
-        } catch (error) {
-            console.error("Failed to create campaign", error);
-            alert("Failed to create campaign");
-        }
-    };
-
-    if (loading) {
-        return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto text-brand-blue" /></div>;
-    }
+    const filteredCampaigns = campaigns.filter(c =>
+        c.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">Campaigns & Flash Sales</h1>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-brand-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                >
+        <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Campaigns</h1>
+                <Link href="/admin/campaigns/create" className="bg-brand-blue text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors">
                     <Plus size={20} /> Create Campaign
-                </button>
+                </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {campaigns.map((campaign) => (
-                    <div key={campaign.id} className={`bg-white p-6 rounded-xl shadow-sm border ${campaign.is_active ? 'border-brand-blue' : 'border-gray-100'} relative overflow-hidden`}>
-                        <div className={`absolute top-0 right-0 text-white text-xs font-bold px-3 py-1 rounded-bl-xl ${campaign.is_active ? 'bg-brand-blue' : 'bg-gray-400'}`}>
-                            {campaign.is_active ? 'ACTIVE' : 'INACTIVE'}
-                        </div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className={`p-3 rounded-full ${campaign.is_active ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
-                                <Megaphone size={24} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-900 line-clamp-1">{campaign.title}</h3>
-                                <p className="text-sm text-gray-500 line-clamp-1">{campaign.description}</p>
-                            </div>
-                        </div>
-                        <div className="space-y-2 mb-6">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Calendar size={16} />
-                                <span>{new Date(campaign.start_time).toLocaleDateString()} - {new Date(campaign.end_time).toLocaleDateString()}</span>
-                            </div>
-                            {campaign.discount_percentage && (
-                                <p className="text-sm text-gray-600"><strong>{campaign.discount_percentage}% OFF</strong></p>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                                <Edit size={16} /> Edit
-                            </button>
-                            <button
-                                onClick={() => handleDelete(campaign.id)}
-                                className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Trash2 size={16} /> Delete
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Create Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-gray-800">New Campaign</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Start Date</label>
-                                    <input
-                                        type="datetime-local"
-                                        required
-                                        value={formData.start_time}
-                                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">End Date</label>
-                                    <input
-                                        type="datetime-local"
-                                        required
-                                        value={formData.end_time}
-                                        onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Discount % (Optional)</label>
-                                <input
-                                    type="number"
-                                    value={formData.discount_percentage}
-                                    onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                />
-                            </div>
-                            <button type="submit" className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                                Create Campaign
-                            </button>
-                        </form>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                    <div className="relative max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search campaigns..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+                        />
                     </div>
                 </div>
-            )}
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-600 font-semibold text-sm">
+                            <tr>
+                                <th className="px-6 py-4">Title</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4">Duration</th>
+                                <th className="px-6 py-4">Theme</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {loading ? (
+                                <tr><td colSpan={5} className="px-6 py-8 text-center">Loading...</td></tr>
+                            ) : filteredCampaigns.length === 0 ? (
+                                <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">No campaigns found.</td></tr>
+                            ) : (
+                                filteredCampaigns.map((campaign) => (
+                                    <tr key={campaign.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">{campaign.title}</div>
+                                            <div className="text-xs text-gray-500">{campaign.slug}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {campaign.is_active ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <CheckCircle size={12} /> Active
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    <XCircle size={12} /> Inactive
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            <div className="flex items-center gap-2">
+                                                <Calendar size={14} />
+                                                {format(new Date(campaign.start_time), 'MMM d')} - {format(new Date(campaign.end_time), 'MMM d, yyyy')}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="capitalize text-sm text-gray-600">{campaign.theme_mode}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link href={`/admin/campaigns/${campaign.id}`} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                    <Edit size={18} />
+                                                </Link>
+                                                <button onClick={() => handleDelete(campaign.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }
