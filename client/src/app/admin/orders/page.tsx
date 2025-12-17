@@ -48,8 +48,15 @@ export default function AdminOrdersPage() {
     };
 
     const filteredOrders = orders.filter(order => {
+        const userSearch = order.user ?
+            (order.user.username?.toLowerCase() || '') +
+            (order.user.email?.toLowerCase() || '') +
+            (order.user.first_name?.toLowerCase() || '') +
+            (order.user.last_name?.toLowerCase() || '')
+            : '';
+
         const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (order.user && order.user.toLowerCase().includes(searchTerm.toLowerCase()));
+            userSearch.includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "All" || order.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -68,7 +75,7 @@ export default function AdminOrdersPage() {
                     <Search className="absolute top-3 left-3" size={20} />
                     <input
                         type="text"
-                        placeholder="Search orders by ID or User..."
+                        placeholder="Search orders by ID, Name or Email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
@@ -107,7 +114,12 @@ export default function AdminOrdersPage() {
                             <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
                                 <td className="px-6 py-4">
-                                    <p className="font-bold text-gray-800">{order.user || 'Guest'}</p>
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-gray-800">
+                                            {order.user ? (order.user.first_name ? `${order.user.first_name} ${order.user.last_name}` : order.user.username) : 'Guest'}
+                                        </span>
+                                        <span className="text-xs text-gray-500">{order.user?.email}</span>
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                                 <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
@@ -133,7 +145,7 @@ export default function AdminOrdersPage() {
                                     </select>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <Link href={`/dashboard/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
+                                    <Link href={`/admin/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
                                         <Eye size={18} />
                                     </Link>
                                 </td>
