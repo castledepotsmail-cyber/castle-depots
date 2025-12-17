@@ -14,6 +14,7 @@ import FlashSaleCarousel from "@/components/campaign/FlashSaleCarousel";
 
 import HeroBackground from "@/components/common/HeroBackground";
 import { campaignService } from "@/services/campaignService";
+import ProductCarousel from "@/components/product/ProductCarousel";
 
 // ... existing imports ...
 
