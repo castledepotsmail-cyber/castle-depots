@@ -55,63 +55,65 @@ export default function AdminCustomersPage() {
 
             {/* Customers Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold">Customer</th>
-                            <th className="px-6 py-4 font-semibold">Contact</th>
-                            <th className="px-6 py-4 font-semibold">Role</th>
-                            <th className="px-6 py-4 font-semibold">Joined</th>
-                            <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {filteredCustomers.map((customer) => (
-                            <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        {customer.profile_picture ? (
-                                            <img src={customer.profile_picture} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
-                                        ) : (
-                                            <div className="w-10 h-10 bg-brand-blue text-white rounded-full flex items-center justify-center font-bold">
-                                                {customer.first_name?.[0] || customer.username?.[0] || 'U'}
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                            <tr>
+                                <th className="px-4 md:px-6 py-4 font-semibold">Customer</th>
+                                <th className="hidden md:table-cell px-6 py-4 font-semibold">Contact</th>
+                                <th className="px-4 md:px-6 py-4 font-semibold">Role</th>
+                                <th className="hidden lg:table-cell px-6 py-4 font-semibold">Joined</th>
+                                <th className="px-4 md:px-6 py-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredCustomers.map((customer) => (
+                                <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-4 md:px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            {customer.profile_picture ? (
+                                                <img src={customer.profile_picture} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-10 h-10 bg-brand-blue text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                                    {customer.first_name?.[0] || customer.username?.[0] || 'U'}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="font-bold text-gray-900 text-sm md:text-base">{customer.first_name} {customer.last_name}</p>
+                                                <p className="text-xs text-gray-500">@{customer.username}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Mail size={14} /> {customer.email}
+                                        </div>
+                                        {customer.phone_number && (
+                                            <div className="flex items-center gap-2">
+                                                <Phone size={14} /> {customer.phone_number}
                                             </div>
                                         )}
-                                        <div>
-                                            <p className="font-bold text-gray-900">{customer.first_name} {customer.last_name}</p>
-                                            <p className="text-xs text-gray-500">@{customer.username}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Mail size={14} /> {customer.email}
-                                    </div>
-                                    {customer.phone_number && (
-                                        <div className="flex items-center gap-2">
-                                            <Phone size={14} /> {customer.phone_number}
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {customer.is_superuser ? (
-                                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">Super Admin</span>
-                                    ) : customer.is_staff ? (
-                                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Staff</span>
-                                    ) : (
-                                        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">Customer</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-gray-500">{new Date(customer.date_joined || Date.now()).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                                        <MoreHorizontal size={20} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td className="px-4 md:px-6 py-4">
+                                        {customer.is_superuser ? (
+                                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] md:text-xs font-bold">Super Admin</span>
+                                        ) : customer.is_staff ? (
+                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] md:text-xs font-bold">Staff</span>
+                                        ) : (
+                                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-[10px] md:text-xs font-bold">Customer</span>
+                                        )}
+                                    </td>
+                                    <td className="hidden lg:table-cell px-6 py-4 text-gray-500">{new Date(customer.date_joined || Date.now()).toLocaleDateString()}</td>
+                                    <td className="px-4 md:px-6 py-4 text-right">
+                                        <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                                            <MoreHorizontal size={20} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

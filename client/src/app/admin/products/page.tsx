@@ -84,57 +84,59 @@ export default function AdminProductsPage() {
 
             {/* Product Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold">Product</th>
-                            <th className="px-6 py-4 font-semibold">Category</th>
-                            <th className="px-6 py-4 font-semibold">Price</th>
-                            <th className="px-6 py-4 font-semibold">Stock</th>
-                            <th className="px-6 py-4 font-semibold">Status</th>
-                            <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {filteredProducts.map((product) => (
-                            <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
-                                            {product.image_main ? (
-                                                <Image src={product.image_main} alt={product.name} fill className="object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
-                                            )}
-                                        </div>
-                                        <span className="font-bold text-gray-900 line-clamp-1 max-w-xs">{product.name}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600">{product.category_name || '-'}</td>
-                                <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(product.price).toLocaleString()}</td>
-                                <td className="px-6 py-4 text-gray-600">{product.stock_quantity}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.stock_quantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {product.stock_quantity > 0 ? 'Active' : 'Out of Stock'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <Link href={`/admin/products/edit/${product.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                                            <Edit size={18} />
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDelete(product.id)}
-                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                            <tr>
+                                <th className="px-4 md:px-6 py-4 font-semibold">Product</th>
+                                <th className="hidden md:table-cell px-6 py-4 font-semibold">Category</th>
+                                <th className="px-4 md:px-6 py-4 font-semibold">Price</th>
+                                <th className="hidden sm:table-cell px-6 py-4 font-semibold">Stock</th>
+                                <th className="px-4 md:px-6 py-4 font-semibold">Status</th>
+                                <th className="px-4 md:px-6 py-4 font-semibold text-right">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredProducts.map((product) => (
+                                <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-4 md:px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
+                                                {product.image_main ? (
+                                                    <Image src={product.image_main} alt={product.name} fill className="object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                                                )}
+                                            </div>
+                                            <span className="font-bold text-gray-900 line-clamp-1 max-w-[120px] sm:max-w-xs">{product.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="hidden md:table-cell px-6 py-4 text-gray-600">{product.category_name || '-'}</td>
+                                    <td className="px-4 md:px-6 py-4 font-bold text-gray-900 text-sm md:text-base">KES {parseFloat(product.price).toLocaleString()}</td>
+                                    <td className="hidden sm:table-cell px-6 py-4 text-gray-600">{product.stock_quantity}</td>
+                                    <td className="px-4 md:px-6 py-4">
+                                        <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-bold ${product.stock_quantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {product.stock_quantity > 0 ? 'Active' : 'Out'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 md:px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Link href={`/admin/products/edit/${product.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                                                <Edit size={18} />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(product.id)}
+                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
