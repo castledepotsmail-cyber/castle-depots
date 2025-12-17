@@ -12,6 +12,8 @@ import { useCartStore } from "@/store/cartStore";
 
 import FlashSaleCarousel from "@/components/campaign/FlashSaleCarousel";
 
+import HeroBackground from "@/components/common/HeroBackground";
+
 export default function Home() {
   const [topDeals, setTopDeals] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -52,15 +54,8 @@ export default function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative bg-brand-blue text-white py-20 md:py-32 overflow-hidden">
-          {/* Background Image */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/images/hero_cover.png"
-              alt="Hero Background"
-              className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/50 to-transparent"></div>
-          </div>
+          {/* Interactive Background */}
+          <HeroBackground />
 
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
             <div className="md:w-1/2">
