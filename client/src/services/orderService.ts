@@ -8,7 +8,7 @@ export const orderService = {
 
     getOrders: async () => {
         const response = await api.get('/orders/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     getOrder: async (id: string) => {

@@ -16,7 +16,7 @@ export interface Address {
 export const addressService = {
     getAddresses: async () => {
         const response = await api.get('/auth/addresses/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     createAddress: async (data: Omit<Address, 'id'>) => {

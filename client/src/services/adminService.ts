@@ -16,7 +16,7 @@ export const adminService = {
 
     getOrders: async () => {
         const response = await api.get('/orders/admin/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     updateOrderStatus: async (id: string, status: string) => {
@@ -26,12 +26,12 @@ export const adminService = {
 
     getCustomers: async () => {
         const response = await api.get('/accounts/users/'); // Need to check if this route exists or register it
-        return response.data;
+        return response.data.results || response.data;
     },
 
     getCampaigns: async () => {
         const response = await api.get('/campaigns/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     createCampaign: async (data: any) => {
@@ -46,7 +46,7 @@ export const adminService = {
 
     getStoreSettings: async () => {
         const response = await api.get('/orders/settings/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     updateStoreSettings: async (data: any) => {

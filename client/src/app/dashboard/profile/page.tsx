@@ -238,11 +238,11 @@ export default function ProfilePage() {
                     </button>
                 </div>
 
-                {addresses.length === 0 ? (
+                {Array.isArray(addresses) && addresses.length === 0 ? (
                     <p className="text-gray-500 italic">No addresses saved yet.</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {addresses.map((addr) => (
+                        {Array.isArray(addresses) && addresses.map((addr) => (
                             <div key={addr.id} className={`border p-4 rounded-xl relative ${addr.is_default ? 'border-brand-blue bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
                                 {addr.is_default && (
                                     <span className="absolute top-4 right-4 bg-brand-blue text-white text-xs px-2 py-0.5 rounded font-bold">Default</span>

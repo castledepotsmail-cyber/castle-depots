@@ -35,7 +35,7 @@ export interface Campaign {
 export const campaignService = {
     getCampaigns: async () => {
         const response = await api.get('/campaigns/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     getCampaign: async (id: string) => {
@@ -60,7 +60,7 @@ export const campaignService = {
 
     getActiveCampaigns: async () => {
         const response = await api.get('/campaigns/active/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     createBanner: async (data: any) => {

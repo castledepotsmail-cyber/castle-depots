@@ -3,7 +3,7 @@ import api from '@/lib/api';
 export const wishlistService = {
     getWishlist: async () => {
         const response = await api.get('/products/wishlist/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     addToWishlist: async (productId: string) => {

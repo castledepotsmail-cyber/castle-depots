@@ -64,8 +64,9 @@ export default function OrdersPage() {
             <h1 className="font-display text-2xl font-bold text-gray-800">My Orders</h1>
 
             <div className="space-y-4">
-                {orders.map((order) => {
+                {Array.isArray(orders) && orders.map((order) => {
                     const needsPayment = order.status === 'delivered' && !order.is_paid && order.payment_method === 'pod';
+                    const dateStr = new Date(order.created_at).toISOString().split('T')[0]; // Safe for hydration
 
                     return (
                         <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -76,8 +77,8 @@ export default function OrdersPage() {
                                             <Package size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-gray-900">Order #{order.id.slice(0, 8)}...</h3>
-                                            <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
+                                            <h3 className="font-bold text-gray-900">Order #{typeof order.id === 'string' ? order.id.slice(0, 8) : order.id}...</h3>
+                                            <p className="text-sm text-gray-500">Placed on {dateStr}</p>
                                         </div>
                                     </div>
 

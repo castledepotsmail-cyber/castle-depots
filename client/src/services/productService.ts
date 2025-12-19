@@ -72,7 +72,7 @@ export const productService = {
 
     getCategories: async () => {
         const response = await api.get('/products/categories/');
-        return response.data;
+        return response.data.results || response.data;
     },
 
     getCategory: async (slug: string) => {
