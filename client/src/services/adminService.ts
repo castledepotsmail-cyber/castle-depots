@@ -14,9 +14,9 @@ export const adminService = {
         return response.data;
     },
 
-    getOrders: async () => {
-        const response = await api.get('/orders/admin/');
-        return response.data.results || response.data;
+    getOrders: async (page = 1) => {
+        const response = await api.get(`/orders/admin/?page=${page}`);
+        return response.data.results ? response.data : { results: response.data, count: response.data.length };
     },
 
     updateOrderStatus: async (id: string, status: string) => {
@@ -24,9 +24,9 @@ export const adminService = {
         return response.data;
     },
 
-    getCustomers: async () => {
-        const response = await api.get('/accounts/users/'); // Need to check if this route exists or register it
-        return response.data.results || response.data;
+    getCustomers: async (page = 1) => {
+        const response = await api.get(`/auth/users/?page=${page}`);
+        return response.data.results ? response.data : { results: response.data, count: response.data.length };
     },
 
     getCampaigns: async () => {

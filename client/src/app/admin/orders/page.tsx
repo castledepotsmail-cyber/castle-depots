@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Filter, Eye, Loader2 } from "lucide-react";
+import { Search, Filter, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
 import Link from "next/link";
@@ -10,15 +10,19 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(page);
+    }, [page]);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (pageNum: number) => {
+        setLoading(true);
         try {
-            const data = await adminService.getOrders();
-            setOrders(data.results || data);
+            const data = await adminService.getOrders(pageNum);
+            setOrders(data.results || []);
+            setTotalPages(Math.ceil((data.count || 0) / 10)); // Assuming page size 10
         } catch (error) {
             console.error("Failed to fetch orders", error);
         } finally {
@@ -61,7 +65,7 @@ export default function AdminOrdersPage() {
         return matchesSearch && matchesStatus;
     });
 
-    if (loading) {
+    if (loading && orders.length === 0) {
         return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto text-brand-blue" /></div>;
     }
 
@@ -110,49 +114,78 @@ export default function AdminOrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {filteredOrders.map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
-                                <td className="px-6 py-4">
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-gray-800">
-                                            {order.user ? (order.user.first_name ? `${order.user.first_name} ${order.user.last_name}` : order.user.username) : 'Guest'}
-                                        </span>
-                                        <span className="text-xs text-gray-500">{order.user?.email}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${order.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                        {order.payment_method === 'pod' ? 'POD' : (order.is_paid ? 'Paid' : 'Pending')}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <select
-                                        value={order.status}
-                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                        className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
-                                            order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
-                                                'bg-blue-50 text-blue-700'
-                                            }`}
-                                    >
-                                        <option value="placed">Placed</option>
-                                        <option value="processing">Processing</option>
-                                        <option value="shipped">Shipped</option>
-                                        <option value="delivered">Delivered</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <Link href={`/admin/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
-                                        <Eye size={18} />
-                                    </Link>
+                        {filteredOrders.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                                    No orders found.
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            filteredOrders.map((order) => (
+                                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-gray-800">
+                                                {order.user ? (order.user.first_name ? `${order.user.first_name} ${order.user.last_name}` : order.user.username) : 'Guest'}
+                                            </span>
+                                            <span className="text-xs text-gray-500">{order.user?.email}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${order.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                            {order.payment_method === 'pod' ? 'POD' : (order.is_paid ? 'Paid' : 'Pending')}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <select
+                                            value={order.status}
+                                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                            className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
+                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                    'bg-blue-50 text-blue-700'
+                                                }`}
+                                        >
+                                            <option value="placed">Placed</option>
+                                            <option value="processing">Processing</option>
+                                            <option value="shipped">Shipped</option>
+                                            <option value="delivered">Delivered</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <Link href={`/admin/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
+                                            <Eye size={18} />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <ChevronLeft size={16} /> Previous
+                    </button>
+                    <span className="text-sm text-gray-600">
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
         </div>
     );
