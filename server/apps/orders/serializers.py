@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from .models import Order, OrderItem
+from .models import Order, OrderItem, StoreSettings
 from apps.products.serializers import ProductSerializer
+
+class StoreSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreSettings
+        fields = '__all__'
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
@@ -19,7 +24,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status', 'payment_method', 'total_amount', 'delivery_address', 'delivery_latitude', 'delivery_longitude', 'items', 'created_at', 'paystack_ref', 'is_paid']
+        fields = ['id', 'user', 'status', 'payment_method', 'total_amount', 'delivery_address', 'delivery_latitude', 'delivery_longitude', 'shipping_cost', 'items', 'created_at', 'paystack_ref', 'is_paid']
         read_only_fields = ['user', 'created_at']
 
     def create(self, validated_data):

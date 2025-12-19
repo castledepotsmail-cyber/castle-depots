@@ -42,6 +42,16 @@ export const adminService = {
     deleteCampaign: async (id: string) => {
         const response = await api.delete(`/campaigns/${id}/`);
         return response.data;
+    },
+
+    getStoreSettings: async () => {
+        const response = await api.get('/orders/settings/');
+        return response.data;
+    },
+
+    updateStoreSettings: async (data: any) => {
+        const response = await api.post('/orders/settings/', data);
+        return response.data;
     }
 };
 

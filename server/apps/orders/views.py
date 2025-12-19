@@ -54,3 +54,62 @@ class TrackOrderView(APIView):
             return Response(OrderSerializer(order).data)
         except Order.DoesNotExist:
             return Response({'error': 'Order not found'}, status=404)
+
+from math import radians, cos, sin, asin, sqrt
+from rest_framework.decorators import action
+from .models import StoreSettings
+from .serializers import StoreSettingsSerializer
+
+class StoreSettingsViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAdminUser] 
+    
+    def list(self, request):
+        settings = StoreSettings.objects.first()
+        if not settings:
+            # Return default empty structure or create default
+            settings = StoreSettings.objects.create(store_address="Not Set", latitude=-1.2921, longitude=36.8219) # Default Nairobi
+        return Response(StoreSettingsSerializer(settings).data)
+
+    def create(self, request):
+        # Update existing or create
+        settings = StoreSettings.objects.first()
+        if settings:
+            serializer = StoreSettingsSerializer(settings, data=request.data)
+        else:
+            serializer = StoreSettingsSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def calculate_shipping(self, request):
+        try:
+            lat = float(request.query_params.get('lat'))
+            lng = float(request.query_params.get('lng'))
+        except (TypeError, ValueError):
+            return Response({'error': 'Invalid coordinates'}, status=400)
+            
+        settings = StoreSettings.objects.first()
+        if not settings:
+             return Response({'cost': 0, 'distance': 0, 'message': 'Store location not set'})
+
+        # Haversine formula
+        R = 6371 # Earth radius in km
+        dLat = radians(lat - settings.latitude)
+        dLon = radians(lng - settings.longitude)
+        a = sin(dLat/2) * sin(dLat/2) + cos(radians(settings.latitude)) * cos(radians(lat)) * sin(dLon/2) * sin(dLon/2)
+        c = 2 * asin(sqrt(a))
+        distance = R * c
+        
+        if settings.max_delivery_distance and distance > settings.max_delivery_distance:
+             return Response({'error': 'Location is outside delivery range', 'distance': round(distance, 2)}, status=400)
+             
+        cost = float(settings.base_shipping_cost) + (distance * float(settings.cost_per_km))
+        
+        return Response({
+            'cost': round(cost, 2),
+            'distance': round(distance, 2),
+            'store_location': {'lat': settings.latitude, 'lng': settings.longitude}
+        })

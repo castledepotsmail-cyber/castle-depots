@@ -27,5 +27,10 @@ export const orderService = {
     updateOrderStatus: async (id: string, status: string) => {
         const response = await api.patch(`/orders/${id}/`, { status });
         return response.data;
+    },
+
+    calculateShipping: async (lat: number, lng: number) => {
+        const response = await api.get(`/orders/settings/calculate_shipping/?lat=${lat}&lng=${lng}`);
+        return response.data;
     }
 };

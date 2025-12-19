@@ -87,12 +87,42 @@ export default function CheckoutPage() {
         }
     };
 
+    const [shippingCost, setShippingCost] = useState(0);
+    const [shippingDistance, setShippingDistance] = useState(0);
+    const [calculatingShipping, setCalculatingShipping] = useState(false);
+
+    useEffect(() => {
+        const calculate = async () => {
+            if (formData.latitude && formData.longitude) {
+                setCalculatingShipping(true);
+                try {
+                    const data = await orderService.calculateShipping(formData.latitude, formData.longitude);
+                    if (data.error) {
+                        // toast.error(data.error); // Optional: notify user
+                        setShippingCost(0);
+                    } else {
+                        setShippingCost(data.cost);
+                        setShippingDistance(data.distance);
+                    }
+                } catch (error) {
+                    console.error("Shipping calculation failed", error);
+                } finally {
+                    setCalculatingShipping(false);
+                }
+            }
+        };
+        calculate();
+    }, [formData.latitude, formData.longitude]);
+
+    const finalTotal = total + shippingCost;
+
     const processOrder = async (reference?: string) => {
         setLoading(true);
         try {
             const orderData = {
                 payment_method: formData.paymentMethod,
-                total_amount: total,
+                total_amount: finalTotal,
+                shipping_cost: shippingCost,
                 delivery_address: `${formData.address}, ${formData.city}, ${formData.county}`,
                 delivery_latitude: formData.latitude,
                 delivery_longitude: formData.longitude,
@@ -123,7 +153,7 @@ export default function CheckoutPage() {
     const config = {
         reference: (new Date()).getTime().toString(),
         email: formData.email,
-        amount: total * 100, // Paystack expects amount in kobo/cents
+        amount: finalTotal * 100, // Paystack expects amount in kobo/cents
         currency: 'KES',
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462',
     };
@@ -311,7 +341,7 @@ export default function CheckoutPage() {
                                         disabled={loading}
                                         className="w-full bg-brand-gold text-brand-blue py-4 rounded-xl font-bold hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        {loading ? "Processing..." : `Pay KES ${total.toLocaleString()}`}
+                                        {loading ? "Processing..." : `Pay KES ${finalTotal.toLocaleString()}`}
                                     </button>
                                     <button
                                         onClick={() => setStep(1)}
@@ -356,12 +386,12 @@ export default function CheckoutPage() {
                                         <span>KES {total.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600">
-                                        <span>Shipping</span>
-                                        <span>Free</span>
+                                        <span>Shipping {shippingDistance > 0 && <span className="text-xs text-gray-400">({shippingDistance.toFixed(1)} km)</span>}</span>
+                                        <span>{calculatingShipping ? 'Calculating...' : (shippingCost > 0 ? `KES ${shippingCost.toLocaleString()}` : 'Free')}</span>
                                     </div>
                                     <div className="flex justify-between font-bold text-xl text-brand-blue pt-2">
                                         <span>Total</span>
-                                        <span>KES {total.toLocaleString()}</span>
+                                        <span>KES {finalTotal.toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>

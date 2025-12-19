@@ -32,6 +32,7 @@ class Order(models.Model):
     delivery_address = models.TextField()
     delivery_latitude = models.FloatField(blank=True, null=True)
     delivery_longitude = models.FloatField(blank=True, null=True)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     tracking_notes = models.TextField(blank=True, help_text="Internal notes for tracking")
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,3 +50,31 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
+
+class StoreSettings(models.Model):
+    # Singleton pattern logic can be handled in view/admin, but model is standard
+    store_name = models.CharField(max_length=255, default="Castle Depots")
+    store_address = models.TextField(help_text="Physical address of the store")
+    latitude = models.FloatField(help_text="Store latitude for distance calculation")
+    longitude = models.FloatField(help_text="Store longitude for distance calculation")
+    
+    # Shipping Config
+    cost_per_km = models.DecimalField(max_digits=10, decimal_places=2, default=50.00, help_text="Cost per kilometer in KES")
+    base_shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=200.00, help_text="Minimum base shipping cost")
+    max_delivery_distance = models.FloatField(default=50.0, help_text="Maximum delivery distance in KM")
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Store Settings"
+
+    def __str__(self):
+        return "Store Configuration"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists
+        if not self.pk and StoreSettings.objects.exists():
+            # If you try to save a new one but one exists, update the existing one instead?
+            # Or just enforce singleton in views. For now, simple save is fine.
+            pass
+        return super(StoreSettings, self).save(*args, **kwargs)

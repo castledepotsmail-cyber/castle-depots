@@ -78,7 +78,7 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
         import smtplib
         from django.conf import settings
         import time
-        
+        #results
         results = {
             'checks': [],
             'settings': {
