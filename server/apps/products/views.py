@@ -45,6 +45,20 @@ class ProductViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Fetch active campaigns once per request to avoid N+1 in serializer
+        from apps.campaigns.models import Campaign
+        from django.utils import timezone
+        now = timezone.now()
+        active_campaigns = Campaign.objects.filter(
+            is_active=True, 
+            start_time__lte=now, 
+            end_time__gte=now
+        ).prefetch_related('products', 'categories') # Prefetch related for faster checking
+        context['active_campaigns'] = active_campaigns
+        return context
+
 class WishlistViewSet(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [permissions.IsAuthenticated]

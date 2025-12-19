@@ -92,17 +92,19 @@ class ProductSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         
         # Calculate campaign discount
-        from django.utils import timezone
-        from apps.campaigns.models import Campaign
+        active_campaigns = self.context.get('active_campaigns')
         
-        now = timezone.now()
-        # Optimize: Prefetch or cache this if possible, but for now direct query is safer for correctness
-        active_campaigns = Campaign.objects.filter(
-            start_time__lte=now,
-            end_time__gte=now,
-            is_active=True
-        )
-        
+        if active_campaigns is None:
+            # Fallback if context not set (e.g. other views)
+            from django.utils import timezone
+            from apps.campaigns.models import Campaign
+            now = timezone.now()
+            active_campaigns = Campaign.objects.filter(
+                start_time__lte=now,
+                end_time__gte=now,
+                is_active=True
+            ).prefetch_related('products')
+
         best_discount = 0
         
         for campaign in active_campaigns:
@@ -113,9 +115,10 @@ class ProductSerializer(serializers.ModelSerializer):
                 if instance.category_id == campaign.target_category_id:
                     is_included = True
             elif campaign.product_selection_type == 'manual':
-                # This might be N+1 query issue if listing many products. 
-                # Ideally we should prefetch campaigns on the viewset.
-                if campaign.products.filter(id=instance.id).exists():
+                # Use prefetched products to avoid N+1
+                # Check if instance ID is in the list of campaign product IDs
+                # This assumes 'products' was prefetched in the viewset or fallback above
+                if instance.id in [p.id for p in campaign.products.all()]:
                     is_included = True
             
             if is_included:

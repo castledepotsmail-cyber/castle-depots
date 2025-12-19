@@ -1,94 +1,58 @@
-"use client";
-
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import CampaignBanner from "@/components/campaign/CampaignBanner";
-import { useEffect, useState } from "react";
-import { productService } from "@/services/productService";
-import { Product } from "@/store/cartStore";
-import { useCartStore } from "@/store/cartStore";
-
 import FlashSaleCarousel from "@/components/campaign/FlashSaleCarousel";
-
 import HeroBackground from "@/components/common/HeroBackground";
-import { campaignService } from "@/services/campaignService";
 import ProductCarousel from "@/components/product/ProductCarousel";
+import { fetchServerData } from "@/lib/fetchData";
 
-// ... existing imports ...
+// Server Component
+export default async function Home() {
+  // Parallel Data Fetching
+  const [topDealsData, trendingDealsData, latestDealsData, catsData, campaigns] = await Promise.all([
+    fetchServerData('/products/?on_sale=true&ordering=-created_at&page_size=15', { next: { revalidate: 60 } }),
+    fetchServerData('/products/?ordering=-updated_at&page_size=15', { next: { revalidate: 60 } }),
+    fetchServerData('/products/?ordering=-created_at&page_size=15', { next: { revalidate: 60 } }),
+    fetchServerData('/products/categories/', { next: { revalidate: 3600 } }), // Cache categories longer
+    fetchServerData('/campaigns/active/', { next: { revalidate: 60 } })
+  ]);
 
-export default function Home() {
-  const [topDeals, setTopDeals] = useState<Product[]>([]);
-  const [trendingDeals, setTrendingDeals] = useState<Product[]>([]);
-  const [latestDeals, setLatestDeals] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeFlashSale, setActiveFlashSale] = useState<any>(null);
-  const addItem = useCartStore((state) => state.addItem);
+  const topDeals = topDealsData?.results || [];
+  const trendingDeals = trendingDealsData?.results || [];
+  const latestDeals = latestDealsData?.results || [];
+  const categories = Array.isArray(catsData) ? catsData.slice(0, 4) : [];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Top Deals (On Sale)
-        const topDealsData = await productService.getProducts({ on_sale: 'true', ordering: '-created_at' });
-        if (Array.isArray(topDealsData)) {
-          setTopDeals(topDealsData.slice(0, 15));
+  // Process Campaigns
+  let activeFlashSale = null;
+  let activeTopBanner = null;
+
+  if (Array.isArray(campaigns)) {
+    for (const campaign of campaigns) {
+      // Flash Sale / Hero
+      if (!activeFlashSale) {
+        const banner = campaign.banners?.find((b: any) => (b.type === 'flash_sale' || b.type === 'hero_slide') && b.is_active);
+        if (banner) {
+          activeFlashSale = { ...banner, campaign };
         }
-
-        // Trending Deals (Recently Updated as proxy)
-        const trendingDealsData = await productService.getProducts({ ordering: '-updated_at' });
-        if (Array.isArray(trendingDealsData)) {
-          setTrendingDeals(trendingDealsData.slice(0, 15));
-        }
-
-        // Latest Deals (Newest)
-        const latestDealsData = await productService.getProducts({ ordering: '-created_at' });
-        if (Array.isArray(latestDealsData)) {
-          setLatestDeals(latestDealsData.slice(0, 15));
-        }
-
-      } catch (error) {
-        console.error("Failed to fetch deals", error);
       }
-
-      try {
-        const catsData = await productService.getCategories();
-        if (Array.isArray(catsData)) {
-          setCategories(catsData.slice(0, 4));
+      // Top Banner
+      if (!activeTopBanner) {
+        const topBar = campaign.banners?.find((b: any) => b.type === 'top_bar' && b.is_active);
+        if (topBar) {
+          activeTopBanner = { ...topBar, campaign };
         }
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
       }
-
-      try {
-        const campaigns = await campaignService.getActiveCampaigns();
-        for (const campaign of campaigns) {
-          // Check for 'flash_sale' or 'hero_slide' types for the main promo section
-          const banner = campaign.banners?.find((b: any) => (b.type === 'flash_sale' || b.type === 'hero_slide') && b.is_active);
-          if (banner) {
-            setActiveFlashSale({ ...banner, campaign });
-            break;
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch campaigns", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // ... existing render ...
-
-
+      if (activeFlashSale && activeTopBanner) break;
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative">
       <HeroBackground />
       <div className="relative z-10">
-        <CampaignBanner />
+        <CampaignBanner initialBanner={activeTopBanner} />
       </div>
       <Navbar noSpacer={true} />
 
@@ -101,6 +65,8 @@ export default function Home() {
               src="/images/hero_cover.png"
               alt="Hero Background"
               className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+              // Priority loading for LCP
+              fetchPriority="high"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/50 to-transparent"></div>
           </div>
@@ -148,11 +114,7 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <h2 className="font-display text-3xl font-bold mb-10 text-center text-gray-800">Shop by Category</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {loading ? (
-                <div className="col-span-4 flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue"></div>
-                </div>
-              ) : categories.length > 0 ? categories.map((cat) => (
+              {categories.length > 0 ? categories.map((cat: any) => (
                 <Link
                   key={cat.id}
                   href={`/category/${cat.slug}`}
@@ -163,6 +125,7 @@ export default function Home() {
                       src={cat.image || '/images/placeholder_cat.png'}
                       alt={cat.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                   </div>
@@ -181,7 +144,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Special Offer Banner */}
         {/* Special Offer Banner - Dynamic */}
         {activeFlashSale && (
           <section className="py-8 container mx-auto px-4 relative z-10">
@@ -192,6 +154,7 @@ export default function Home() {
                   src={activeFlashSale.image || "/images/promo_bg.png"}
                   alt="Special Offer"
                   className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+                  loading="lazy"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-r ${(activeFlashSale.theme_mode !== 'inherit' && activeFlashSale.theme_mode) ? (activeFlashSale.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : activeFlashSale.theme_mode === 'green' ? 'from-green-900 via-green-600/70 to-green-500/40' : activeFlashSale.theme_mode === 'dark' ? 'from-gray-900 via-gray-800/70 to-gray-700/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40') : (activeFlashSale.campaign.theme_mode === 'red' ? 'from-red-900 via-red-600/70 to-red-500/40' : activeFlashSale.campaign.theme_mode === 'green' ? 'from-green-900 via-green-600/70 to-green-500/40' : activeFlashSale.campaign.theme_mode === 'dark' ? 'from-gray-900 via-gray-800/70 to-gray-700/40' : 'from-brand-blue via-brand-blue/70 to-brand-blue/40')}`}></div>
               </div>

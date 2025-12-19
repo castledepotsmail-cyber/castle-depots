@@ -5,11 +5,13 @@ import Link from "next/link";
 import { X, Timer } from "lucide-react";
 import { campaignService } from "@/services/campaignService";
 
-export default function CampaignBanner() {
+export default function CampaignBanner({ initialBanner }: { initialBanner?: any }) {
     const [isVisible, setIsVisible] = useState(true);
-    const [activeBanner, setActiveBanner] = useState<any>(null);
+    const [activeBanner, setActiveBanner] = useState<any>(initialBanner || null);
 
     useEffect(() => {
+        if (initialBanner) return; // Skip fetch if provided
+
         const fetchActiveCampaigns = async () => {
             try {
                 const campaigns = await campaignService.getActiveCampaigns();
@@ -26,7 +28,7 @@ export default function CampaignBanner() {
             }
         };
         fetchActiveCampaigns();
-    }, []);
+    }, [initialBanner]);
 
     if (!isVisible || !activeBanner) return null;
 
