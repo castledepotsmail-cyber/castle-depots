@@ -55,7 +55,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             is_active=True, 
             start_time__lte=now, 
             end_time__gte=now
-        ).prefetch_related('products', 'categories') # Prefetch related for faster checking
+        ).prefetch_related('products') # Prefetch related for faster checking
         context['active_campaigns'] = active_campaigns
         return context
 
