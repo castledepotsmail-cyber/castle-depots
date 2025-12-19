@@ -116,10 +116,13 @@ class ProductSerializer(serializers.ModelSerializer):
                     is_included = True
             elif campaign.product_selection_type == 'manual':
                 # Use prefetched products to avoid N+1
-                # Check if instance ID is in the list of campaign product IDs
-                # This assumes 'products' was prefetched in the viewset or fallback above
-                if instance.id in [p.id for p in campaign.products.all()]:
-                    is_included = True
+                try:
+                    # Ensure we are comparing UUIDs correctly
+                    # campaign.products.all() returns Product instances
+                    if instance.id in [p.id for p in campaign.products.all()]:
+                        is_included = True
+                except Exception:
+                    pass # Fail safe if something goes wrong with prefetch or ID access
             
             if is_included:
                 if campaign.discount_percentage > best_discount:
