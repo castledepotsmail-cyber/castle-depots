@@ -67,7 +67,7 @@ export default function ProductCarousel({ title, products, viewAllLink }: Produc
 
                             <Link href={`/product/${product.id}`} className="h-40 md:h-48 bg-gray-100 rounded-xl mb-4 relative overflow-hidden">
                                 <img
-                                    src={product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
+                                    src={product.image_main || product.image || "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600"}
                                     alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
                                 />

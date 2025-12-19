@@ -5,7 +5,8 @@ export interface Product {
     id: string;
     name: string;
     price: number;
-    image: string;
+    image?: string;
+    image_main?: string;
     discountPrice?: number;
     stock_quantity: number;
     average_rating?: number;

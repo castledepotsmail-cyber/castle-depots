@@ -49,7 +49,7 @@ export default function ProductDetailsPage() {
             try {
                 const data = await productService.getProduct(id);
                 setProduct(data);
-                setSelectedImage(data.image); // Default to main image
+                setSelectedImage(data.image || null); // Default to main image
 
                 // Fetch related products if category is available
                 if (data.category) {
@@ -138,9 +138,9 @@ export default function ProductDetailsPage() {
 
     // Combine main image and additional images
     const allImages = [
-        { id: 'main', image: product.image },
+        ...(product.image ? [{ id: 'main', image: product.image }] : []),
         ...(product.images || [])
-    ].filter(img => img.image); // Filter out empty
+    ];
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
