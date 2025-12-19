@@ -1,5 +1,5 @@
 export async function fetchServerData(endpoint: string, options: RequestInit = {}) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://castle-depots.onrender.com/api';
     const url = `${baseUrl}${endpoint}`;
 
     try {

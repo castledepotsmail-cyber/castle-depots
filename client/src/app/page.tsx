@@ -12,11 +12,11 @@ import { fetchServerData } from "@/lib/fetchData";
 export default async function Home() {
   // Parallel Data Fetching
   const [topDealsData, trendingDealsData, latestDealsData, catsData, campaigns] = await Promise.all([
-    fetchServerData('/products/?on_sale=true&ordering=-created_at&page_size=15', { next: { revalidate: 60 } }),
-    fetchServerData('/products/?ordering=-updated_at&page_size=15', { next: { revalidate: 60 } }),
-    fetchServerData('/products/?ordering=-created_at&page_size=15', { next: { revalidate: 60 } }),
+    fetchServerData('/products/?on_sale=true&ordering=-created_at&page_size=15', { next: { revalidate: 30 } }),
+    fetchServerData('/products/?ordering=-updated_at&page_size=15', { next: { revalidate: 30 } }),
+    fetchServerData('/products/?ordering=-created_at&page_size=15', { next: { revalidate: 30 } }),
     fetchServerData('/products/categories/', { next: { revalidate: 3600 } }), // Cache categories longer
-    fetchServerData('/campaigns/active/', { next: { revalidate: 60 } })
+    fetchServerData('/campaigns/active/', { next: { revalidate: 30 } })
   ]);
 
   const topDeals = topDealsData?.results || [];
