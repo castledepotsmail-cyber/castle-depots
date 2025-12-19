@@ -238,11 +238,16 @@ SIMPLE_JWT = {
 PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462')
 
 # Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'apps.communication.email_backend.NextJSEmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'kbrian1237@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'kyox txhb hgvu smsm')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Next.js Email Proxy Settings
+NEXTJS_API_URL = os.environ.get('NEXTJS_API_URL', 'https://castle-depots.vercel.app') # Default to prod, override locally
+EMAIL_API_SECRET = os.environ.get('EMAIL_API_SECRET', 'your-secure-secret-key-change-this')
 
