@@ -11,7 +11,7 @@ import { fetchServerData } from "@/lib/fetchData";
 // Server Component
 export default async function Home() {
   // Parallel Data Fetching
-  const [topDealsData, trendingDealsData, latestDealsData, catsData, campaigns] = await Promise.all([
+  const [topDealsData, trendingDealsData, latestDealsData, catsData, campaignsData] = await Promise.all([
     fetchServerData('/products/?on_sale=true&ordering=-created_at&page_size=15', { next: { revalidate: 30 } }),
     fetchServerData('/products/?ordering=-updated_at&page_size=15', { next: { revalidate: 30 } }),
     fetchServerData('/products/?ordering=-created_at&page_size=15', { next: { revalidate: 30 } }),
@@ -19,10 +19,14 @@ export default async function Home() {
     fetchServerData('/campaigns/active/', { next: { revalidate: 30 } })
   ]);
 
-  const topDeals = topDealsData?.results || [];
-  const trendingDeals = trendingDealsData?.results || [];
-  const latestDeals = latestDealsData?.results || [];
-  const categories = Array.isArray(catsData) ? catsData.slice(0, 4) : [];
+  const topDeals = topDealsData?.results || (Array.isArray(topDealsData) ? topDealsData : []);
+  const trendingDeals = trendingDealsData?.results || (Array.isArray(trendingDealsData) ? trendingDealsData : []);
+  const latestDeals = latestDealsData?.results || (Array.isArray(latestDealsData) ? latestDealsData : []);
+
+  const categoriesRaw = catsData?.results || (Array.isArray(catsData) ? catsData : []);
+  const categories = categoriesRaw.slice(0, 4);
+
+  const campaigns = campaignsData?.results || (Array.isArray(campaignsData) ? campaignsData : []);
 
   // Process Campaigns
   let activeFlashSale = null;
