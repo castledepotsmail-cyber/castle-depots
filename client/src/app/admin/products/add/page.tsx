@@ -59,7 +59,7 @@ export default function AddProductPage() {
         try {
             const newBlob = await upload(file.name, file, {
                 access: 'public',
-                handleUploadUrl: '/api/upload',
+                handleUploadUrl: '/blob-upload',
             });
             setFormData(prev => ({ ...prev, image_main: newBlob.url }));
         } catch (error) {
@@ -82,7 +82,7 @@ export default function AddProductPage() {
             for (const file of files) {
                 const newBlob = await upload(file.name, file, {
                     access: 'public',
-                    handleUploadUrl: '/api/upload',
+                    handleUploadUrl: '/blob-upload',
                 });
                 newUrls.push(newBlob.url);
             }
