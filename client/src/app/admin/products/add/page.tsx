@@ -128,9 +128,25 @@ export default function AddProductPage() {
 
             alert("Product created successfully!");
             router.push('/admin/products');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create product", error);
-            alert("Failed to create product. Please try again.");
+            if (error.response && error.response.data) {
+                // Handle DRF validation errors
+                const errors = error.response.data;
+                let errorMessage = "Failed to create product:\n";
+
+                if (typeof errors === 'object') {
+                    Object.entries(errors).forEach(([key, value]) => {
+                        errorMessage += `${key}: ${Array.isArray(value) ? value.join(', ') : value}\n`;
+                    });
+                } else {
+                    errorMessage += String(errors);
+                }
+
+                alert(errorMessage);
+            } else {
+                alert("Failed to create product. Please try again.");
+            }
         } finally {
             setLoading(false);
         }

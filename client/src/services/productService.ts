@@ -44,6 +44,25 @@ export const productService = {
         }));
     },
 
+    getProductsPaginated: async (page: number = 1, search: string = '', pageSize: number = 10) => {
+        const params: any = { page, page_size: pageSize };
+        if (search) params.search = search;
+
+        const response = await api.get('/products/', { params });
+
+        const results = response.data.results || (Array.isArray(response.data) ? response.data : []);
+        const count = response.data.count || results.length;
+
+        const mappedResults = results.map((p: any) => ({
+            ...p,
+            image: p.image_main,
+            discountPrice: p.discount_price ? parseFloat(p.discount_price) : undefined,
+            price: p.price
+        }));
+
+        return { results: mappedResults, count };
+    },
+
     getProduct: async (id: string) => {
         const response = await api.get(`/products/${id}/`);
         const p = response.data;
