@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { upload } from '@vercel/blob/client';
+import CastleLoader from "@/components/ui/CastleLoader";
 
 export default function AddCategoryPage() {
     const router = useRouter();
@@ -29,23 +31,40 @@ export default function AddCategoryPage() {
         setLoading(true);
 
         try {
-            const data = new FormData();
-            data.append("name", formData.name);
-            data.append("slug", formData.slug);
+            let imageUrl = "";
+
             if (imageFile) {
-                data.append("image", imageFile);
+                const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${imageFile.name}`;
+                const newBlob = await upload(uniqueFilename, imageFile, {
+                    access: 'public',
+                    handleUploadUrl: '/blob-upload',
+                });
+                imageUrl = newBlob.url;
             }
 
-            await api.post("/products/categories/", data, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+            await api.post("/products/categories/", {
+                name: formData.name,
+                slug: formData.slug,
+                image: imageUrl
             });
 
             router.push("/admin/categories");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create category", error);
-            alert("Failed to create category");
+            if (error.response && error.response.data) {
+                const errors = error.response.data;
+                let errorMessage = "Failed to create category:\n";
+                if (typeof errors === 'object') {
+                    Object.entries(errors).forEach(([key, value]) => {
+                        errorMessage += `${key}: ${Array.isArray(value) ? value.join(', ') : value}\n`;
+                    });
+                } else {
+                    errorMessage += String(errors);
+                }
+                alert(errorMessage);
+            } else {
+                alert(`Failed to create category: ${error.message || "Unknown error"}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -111,7 +130,7 @@ export default function AddCategoryPage() {
                         disabled={loading}
                         className="bg-brand-blue text-white px-8 py-3 rounded-lg font-bold hover:bg-brand-gold hover:text-brand-blue transition-colors disabled:opacity-50 flex items-center gap-2"
                     >
-                        {loading && <Loader2 className="animate-spin" size={20} />}
+                        {loading && <CastleLoader size="sm" />}
                         Create Category
                     </button>
                 </div>
