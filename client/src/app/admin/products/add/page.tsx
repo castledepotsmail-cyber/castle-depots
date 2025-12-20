@@ -57,7 +57,8 @@ export default function AddProductPage() {
         setUploading(true);
 
         try {
-            const newBlob = await upload(file.name, file, {
+            const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`;
+            const newBlob = await upload(uniqueFilename, file, {
                 access: 'public',
                 handleUploadUrl: '/blob-upload',
             });
@@ -78,9 +79,10 @@ export default function AddProductPage() {
         const newUrls: string[] = [];
 
         try {
-            // Upload sequentially or parallel
+            // Upload sequentially
             for (const file of files) {
-                const newBlob = await upload(file.name, file, {
+                const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`;
+                const newBlob = await upload(uniqueFilename, file, {
                     access: 'public',
                     handleUploadUrl: '/blob-upload',
                 });
@@ -91,9 +93,9 @@ export default function AddProductPage() {
                 ...prev,
                 uploaded_images: [...prev.uploaded_images, ...newUrls]
             }));
-        } catch (error) {
+        } catch (error: any) {
             console.error("Upload failed", error);
-            alert("Failed to upload some images.");
+            alert(`Failed to upload some images: ${error.message || "Unknown error"}`);
         } finally {
             setUploading(false);
         }
