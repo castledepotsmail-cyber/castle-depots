@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Upload, Save, Loader2, X, Plus } from "lucide-react";
+import { ArrowLeft, Upload, Save, X, Plus } from "lucide-react";
+import CastleLoader from "@/components/ui/CastleLoader";
 import { useState, useEffect, useRef } from "react";
 import { productService, Category } from "@/services/productService";
 import { useRouter } from "next/navigation";
@@ -275,7 +276,7 @@ export default function AddProductPage() {
                                 className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 hover:border-brand-blue hover:text-brand-blue transition-colors"
                                 disabled={uploading}
                             >
-                                {uploading ? <Loader2 className="animate-spin" /> : <Plus size={24} />}
+                                {uploading ? <CastleLoader size="sm" /> : <Plus size={24} />}
                                 <span className="text-xs font-semibold mt-1">Add Image</span>
                             </button>
                         </div>
@@ -343,7 +344,7 @@ export default function AddProductPage() {
                                 className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 cursor-pointer transition-colors"
                             >
                                 {uploading ? (
-                                    <Loader2 className="mx-auto text-brand-blue animate-spin mb-2" size={32} />
+                                    <CastleLoader size="md" />
                                 ) : (
                                     <Upload className="mx-auto text-gray-400 mb-2" size={32} />
                                 )}
@@ -365,8 +366,8 @@ export default function AddProductPage() {
                         disabled={loading || uploading}
                         className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                        Publish Product
+                        {loading ? <CastleLoader size="sm" /> : <Save size={20} />}
+                        {loading ? "Publishing..." : "Publish Product"}
                     </button>
                 </div>
             </div>

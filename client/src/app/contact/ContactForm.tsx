@@ -1,6 +1,7 @@
 "use client";
 
-import { Mail, Phone, MapPin, Send, Loader2, CheckCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
+import CastleLoader from "@/components/ui/CastleLoader";
 import { useState } from "react";
 import api from "@/lib/api";
 
@@ -138,7 +139,7 @@ export default function ContactForm() {
                             disabled={loading}
                             className="w-full bg-brand-blue text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                         >
-                            {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                            {loading ? <CastleLoader size="sm" /> : <Send size={20} />}
                             {loading ? "Sending..." : "Send Message"}
                         </button>
                     </form>

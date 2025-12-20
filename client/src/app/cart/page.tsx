@@ -2,7 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartClient from "./CartClient";
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import CastleLoader from "@/components/ui/CastleLoader";
 
 export default function CartPage() {
     return (
@@ -12,7 +12,7 @@ export default function CartPage() {
                 <h1 className="font-display text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
                 <Suspense fallback={
                     <div className="flex justify-center items-center h-64">
-                        <Loader2 className="animate-spin text-brand-blue" size={48} />
+                        <CastleLoader size="lg" text="Loading Cart..." />
                     </div>
                 }>
                     <CartClient />

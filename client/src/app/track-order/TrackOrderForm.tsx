@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, Package, ArrowRight, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Search, Package, ArrowRight, CheckCircle, XCircle } from "lucide-react";
+import CastleLoader from "@/components/ui/CastleLoader";
 import { useState } from "react";
 import api from "@/lib/api";
 
@@ -53,7 +54,7 @@ export default function TrackOrderForm() {
                     disabled={loading}
                     className="absolute top-1.5 right-1.5 bg-brand-blue text-white px-6 py-1.5 rounded-full font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-70"
                 >
-                    {loading ? <Loader2 className="animate-spin" size={16} /> : <>Track <ArrowRight size={16} /></>}
+                    {loading ? <CastleLoader size="sm" /> : <>Track <ArrowRight size={16} /></>}
                 </button>
             </form>
 

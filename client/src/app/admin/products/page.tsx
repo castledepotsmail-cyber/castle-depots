@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import CastleLoader from "@/components/ui/CastleLoader";
 import { useEffect, useState, useCallback } from "react";
 import { productService, Product } from "@/services/productService";
 import Image from "next/image";
@@ -104,8 +105,8 @@ export default function AdminProductsPage() {
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center">
-                                        <Loader2 className="animate-spin mx-auto text-brand-blue" />
+                                    <td colSpan={6} className="px-6 py-12 flex justify-center">
+                                        <CastleLoader size="md" text="Loading Products..." />
                                     </td>
                                 </tr>
                             ) : products.length === 0 ? (
