@@ -24,7 +24,7 @@ export default async function Home() {
   const latestDeals = latestDealsData?.results || (Array.isArray(latestDealsData) ? latestDealsData : []);
 
   const categoriesRaw = catsData?.results || (Array.isArray(catsData) ? catsData : []);
-  const categories = categoriesRaw.slice(0, 4);
+  const categories = categoriesRaw.slice(0, 5);
 
   const campaigns = campaignsData?.results || (Array.isArray(campaignsData) ? campaignsData : []);
 
@@ -117,7 +117,7 @@ export default async function Home() {
         <section className="py-16 bg-white/90 backdrop-blur-sm relative z-10">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-3xl font-bold mb-10 text-center text-gray-800">Shop by Category</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               {categories.length > 0 ? categories.map((cat: any) => (
                 <Link
                   key={cat.id}
