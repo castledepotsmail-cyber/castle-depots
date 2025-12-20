@@ -111,10 +111,22 @@ export default function AddProductPage() {
             return;
         }
 
+        if (!formData.image_main) {
+            alert("Main image is required");
+            return;
+        }
+
         setLoading(true);
         try {
+            // Auto-generate slug
+            const slug = formData.name
+                .toLowerCase()
+                .replace(/ /g, '-')
+                .replace(/[^\w-]+/g, '');
+
             const productData = {
                 ...formData,
+                slug, // Add generated slug
                 price: parseFloat(formData.price),
                 discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
                 stock_quantity: parseInt(formData.stock_quantity) || 0,
@@ -313,7 +325,7 @@ export default function AddProductPage() {
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                        <h2 className="font-bold text-lg text-gray-800">Main Image</h2>
+                        <h2 className="font-bold text-lg text-gray-800">Main Image *</h2>
 
                         {formData.image_main ? (
                             <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
