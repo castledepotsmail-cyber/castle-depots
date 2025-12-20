@@ -33,7 +33,7 @@ interface ProductDetailsClientProps {
     relatedProducts: Product[];
 }
 
-export default function ProductDetailsClient({ product, relatedProducts }: ProductDetailsClientProps) {
+export default function ProductDetailsClient({ product }: { product: ProductDetails }) {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState<string | null>(product.image || null);
 
@@ -277,18 +277,6 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                     </div>
                 </div>
             </div>
-
-            {/* Related Products */}
-            {relatedProducts.length > 0 && (
-                <div className="mt-20">
-                    <h2 className="font-display text-2xl font-bold text-gray-800 mb-8">Related Products</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {relatedProducts.map((p) => (
-                            <ProductCard key={p.id} product={p} />
-                        ))}
-                    </div>
-                </div>
-            )}
         </main>
     );
 }
