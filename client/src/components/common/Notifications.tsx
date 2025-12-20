@@ -22,7 +22,10 @@ export default function Notifications() {
     const [loading, setLoading] = useState(false);
     const { isAuthenticated } = useAuthStore();
 
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         if (isAuthenticated) {
             fetchNotifications();
             const interval = setInterval(() => fetchNotifications(true), 30000);
@@ -78,7 +81,7 @@ export default function Notifications() {
         return `${Math.floor(seconds / 86400)}d ago`;
     };
 
-    if (!isAuthenticated) return null;
+    if (!mounted || !isAuthenticated) return null;
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 

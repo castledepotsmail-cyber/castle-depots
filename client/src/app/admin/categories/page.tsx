@@ -8,17 +8,21 @@ import Link from "next/link";
 export default function AdminCategoriesPage() {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         loadCategories();
     }, []);
 
     const loadCategories = async () => {
+        setLoading(true);
+        setError("");
         try {
             const data = await productService.getCategories();
             setCategories(data);
         } catch (error) {
             console.error("Failed to load categories", error);
+            setError("Failed to load categories. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -86,7 +90,15 @@ export default function AdminCategoriesPage() {
                                 </td>
                             </tr>
                         ))}
-                        {categories.length === 0 && !loading && (
+                        {error && (
+                            <tr>
+                                <td colSpan={4} className="p-8 text-center text-red-500 bg-red-50">
+                                    <p>{error}</p>
+                                    <button onClick={loadCategories} className="mt-2 text-sm underline font-bold">Retry</button>
+                                </td>
+                            </tr>
+                        )}
+                        {categories.length === 0 && !loading && !error && (
                             <tr>
                                 <td colSpan={4} className="p-8 text-center text-gray-500">No categories found.</td>
                             </tr>

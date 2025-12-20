@@ -22,7 +22,10 @@ export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
         window.location.href = '/';
     };
 
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
@@ -32,6 +35,9 @@ export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Prevent hydration mismatch by waiting for mount to show user-specific content
+    const showUserContent = mounted && isAuthenticated && user;
 
     return (
         <nav className={`bg-brand-blue shadow-lg sticky top-0 z-50 ${noSpacer ? '' : 'mb-12'}`}>
@@ -84,7 +90,7 @@ export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
                             <CartCount count={totalItems} />
                         </Link>
 
-                        {isAuthenticated && user ? (
+                        {showUserContent ? (
                             <div ref={dropdownRef} className="relative pl-4 border-l border-white/20">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -182,7 +188,7 @@ export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
 
                         <nav className="space-y-2">
                             <Link href="/shop" className="block px-4 py-3 rounded-lg hover:bg-gray-50 font-semibold text-gray-700">Shop All</Link>
-                            {isAuthenticated && user && (
+                            {showUserContent && (
                                 <>
                                     {(user.is_staff || user.is_superuser) && (
                                         <Link href="/admin" className="block px-4 py-3 rounded-lg hover:bg-blue-50 font-bold text-brand-blue">Admin Panel</Link>
@@ -195,7 +201,7 @@ export default function Navbar({ noSpacer = false }: { noSpacer?: boolean }) {
                         </nav>
 
                         <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
-                            {isAuthenticated && user ? (
+                            {showUserContent ? (
                                 <>
                                     <div className="flex items-center gap-3 px-4 py-2">
                                         {user.profile_picture ? (
