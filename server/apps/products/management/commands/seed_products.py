@@ -89,32 +89,32 @@ class Command(BaseCommand):
 
         client_images_dir = os.path.join(settings.BASE_DIR.parent, 'client', 'public', 'images')
 
-        for prod_data in products_data:
-            if not Product.objects.filter(slug=prod_data['slug']).exists():
-                try:
-                    category = Category.objects.get(slug=prod_data['category_slug'])
-                    
-                    self.stdout.write(f"Creating product: {prod_data['name']}")
-                    product = Product(
-                        name=prod_data['name'],
-                        slug=prod_data['slug'],
-                        category=category,
-                        price=Decimal(prod_data['price']),
-                        discount_price=Decimal(prod_data['discount_price']) if 'discount_price' in prod_data else None,
-                        description=prod_data['description'],
-                        stock_quantity=50, # Default stock
-                        is_active=True,
-                        allow_pod=True
-                    )
-
-                    # Vercel Blob URLs
-                    blob_base_url = "https://32vzkt6aqmhvgt9v.public.blob.vercel-storage.com/seed/"
-                    product.image_main = f"{blob_base_url}{prod_data['image_name']}"
-                    product.save()
-                
-                except Category.DoesNotExist:
-                    self.stdout.write(self.style.ERROR(f"Category not found: {prod_data['category_slug']}"))
-            else:
-                self.stdout.write(f"Product already exists: {prod_data['name']}")
+        # for prod_data in products_data:
+        #     if not Product.objects.filter(slug=prod_data['slug']).exists():
+        #         try:
+        #             category = Category.objects.get(slug=prod_data['category_slug'])
+        #             
+        #             self.stdout.write(f"Creating product: {prod_data['name']}")
+        #             product = Product(
+        #                 name=prod_data['name'],
+        #                 slug=prod_data['slug'],
+        #                 category=category,
+        #                 price=Decimal(prod_data['price']),
+        #                 discount_price=Decimal(prod_data['discount_price']) if 'discount_price' in prod_data else None,
+        #                 description=prod_data['description'],
+        #                 stock_quantity=50, # Default stock
+        #                 is_active=True,
+        #                 allow_pod=True
+        #             )
+        #
+        #             # Vercel Blob URLs
+        #             blob_base_url = "https://32vzkt6aqmhvgt9v.public.blob.vercel-storage.com/seed/"
+        #             product.image_main = f"{blob_base_url}{prod_data['image_name']}"
+        #             product.save()
+        #         
+        #         except Category.DoesNotExist:
+        #             self.stdout.write(self.style.ERROR(f"Category not found: {prod_data['category_slug']}"))
+        #     else:
+        #         self.stdout.write(f"Product already exists: {prod_data['name']}")
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded products'))

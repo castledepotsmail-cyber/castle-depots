@@ -28,6 +28,11 @@ class Command(BaseCommand):
                 'name': 'Electronics',
                 'slug': 'electronics',
                 'image_name': 'cat_electronics.png'
+            },
+            {
+                'name': 'Beauty',
+                'slug': 'beauty',
+                'image_name': 'cat_beauty.png'
             }
         ]
 
