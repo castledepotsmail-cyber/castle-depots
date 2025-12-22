@@ -46,6 +46,7 @@ export default function EditProductPage() {
     const [newOptionName, setNewOptionName] = useState("");
     const [newOptionValue, setNewOptionValue] = useState("");
     const [currentOptionValues, setCurrentOptionValues] = useState<string[]>([]);
+    const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -168,6 +169,35 @@ export default function EditProductPage() {
             ...prev,
             options: prev.options.filter((_, i) => i !== index)
         }));
+    };
+
+    const startEditingOption = (index: number) => {
+        const option = formData.options[index];
+        setNewOptionName(option.name);
+        setCurrentOptionValues([...option.values]);
+        setEditingOptionIndex(index);
+    };
+
+    const cancelEditingOption = () => {
+        setNewOptionName("");
+        setCurrentOptionValues([]);
+        setEditingOptionIndex(null);
+    };
+
+    const saveEditedOption = () => {
+        if (editingOptionIndex !== null && newOptionName.trim() && currentOptionValues.length > 0) {
+            setFormData(prev => {
+                const updatedOptions = [...prev.options];
+                updatedOptions[editingOptionIndex] = {
+                    name: newOptionName.trim(),
+                    values: currentOptionValues
+                };
+                return { ...prev, options: updatedOptions };
+            });
+            cancelEditingOption();
+        } else {
+            alert("Please provide an option name and at least one value.");
+        }
     };
 
     const handleSubmit = async () => {
@@ -299,14 +329,27 @@ export default function EditProductPage() {
                         {formData.options.length > 0 && (
                             <div className="space-y-3 mb-4">
                                 {formData.options.map((opt, idx) => (
-                                    <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <div key={idx} className={`flex items-center justify-between bg-gray-50 p-3 rounded-lg border ${editingOptionIndex === idx ? 'border-brand-blue ring-1 ring-brand-blue' : 'border-gray-200'}`}>
                                         <div>
                                             <span className="font-bold text-gray-800">{opt.name}:</span>
                                             <span className="text-gray-600 ml-2">{opt.values.join(', ')}</span>
                                         </div>
-                                        <button onClick={() => removeOption(idx)} className="text-red-500 hover:text-red-700">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => startEditingOption(idx)}
+                                                className="text-blue-500 hover:text-blue-700 font-medium text-sm"
+                                                disabled={editingOptionIndex !== null}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => removeOption(idx)}
+                                                className="text-red-500 hover:text-red-700"
+                                                disabled={editingOptionIndex !== null}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -360,14 +403,36 @@ export default function EditProductPage() {
                                     </div>
                                 )}
                             </div>
-                            <button
-                                onClick={addOption}
-                                type="button"
-                                disabled={!newOptionName || currentOptionValues.length === 0}
-                                className="w-full bg-brand-blue text-white py-2 rounded font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Add Option Type
-                            </button>
+                            <div className="flex gap-2">
+                                {editingOptionIndex !== null ? (
+                                    <>
+                                        <button
+                                            onClick={saveEditedOption}
+                                            type="button"
+                                            disabled={!newOptionName || currentOptionValues.length === 0}
+                                            className="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Save Changes
+                                        </button>
+                                        <button
+                                            onClick={cancelEditingOption}
+                                            type="button"
+                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-bold hover:bg-gray-300 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={addOption}
+                                        type="button"
+                                        disabled={!newOptionName || currentOptionValues.length === 0}
+                                        className="w-full bg-brand-blue text-white py-2 rounded font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Add Option Type
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
