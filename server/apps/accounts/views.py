@@ -12,6 +12,8 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 User = get_user_model()
+import logging
+logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
@@ -25,7 +27,7 @@ class RegisterView(generics.CreateAPIView):
         if serializer.is_valid():
             try:
                 user = serializer.save()
-                print(f"User created successfully: {user.username}")
+                logger.info(f"User created successfully: {user.username}")
                 
                 # Send Welcome Email & Notification
                 try:
@@ -57,7 +59,7 @@ class RegisterView(generics.CreateAPIView):
                         fail_silently=True,
                     )
                 except Exception as e:
-                    print(f"Failed to send welcome email/notification: {e}")
+                    logger.error(f"Failed to send welcome email/notification: {e}")
 
                 return Response({
                     'message': 'User created successfully',
@@ -105,7 +107,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
                     fail_silently=False,
                 )
                 
-                print(f"PASSWORD RESET LINK for {email}: {reset_link}") # Keep for debug
+                logger.info(f"PASSWORD RESET LINK for {email}: {reset_link}") # Keep for debug
                 
                 return Response({'message': 'Password reset link sent to email'}, status=status.HTTP_200_OK)
             except User.DoesNotExist:

@@ -18,6 +18,8 @@ def create_order_notification(sender, instance, created, **kwargs):
     from django.template.loader import render_to_string
     from django.utils.html import strip_tags
     from django.conf import settings
+    import logging
+    logger = logging.getLogger(__name__)
 
     if created:
         Notification.objects.create(
@@ -41,11 +43,11 @@ def create_order_notification(sender, instance, created, **kwargs):
                     html_message=html_message,
                     fail_silently=False,
                 )
-                print(f"Email sent successfully to {instance.user.email}")
+                logger.info(f"Email sent successfully to {instance.user.email}")
             except Exception as e:
-                print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+                logger.error(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
                 import traceback
-                traceback.print_exc()
+                logger.error(traceback.format_exc())
 
         threading.Thread(target=send_placed_email).start()
 
@@ -92,10 +94,10 @@ def create_order_notification(sender, instance, created, **kwargs):
                         html_message=html_message,
                         fail_silently=False, 
                     )
-                    print(f"Email sent successfully to {instance.user.email}")
+                    logger.info(f"Email sent successfully to {instance.user.email}")
                 except Exception as e:
-                    print(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
+                    logger.error(f"CRITICAL: Failed to send email to {instance.user.email}: {str(e)}")
                     import traceback
-                    traceback.print_exc()
+                    logger.error(traceback.format_exc())
 
             threading.Thread(target=send_update_email).start()
