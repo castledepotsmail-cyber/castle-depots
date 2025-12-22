@@ -184,7 +184,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(107, 114, 128);
-    pdf.text('For support, contact us at castledepotsmail@gmail.com or call +254 111 731613', 105, yPos + 32, { align: 'center' });
+    pdf.text('For support, contact us at castledepotsmail@gmail.com or call 0700578820 / 0111731613', 105, yPos + 32, { align: 'center' });
 
     // Footer
     const footerY = 280;

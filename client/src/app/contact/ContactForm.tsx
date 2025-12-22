@@ -46,7 +46,7 @@ export default function ContactForm() {
                     <div>
                         <h3 className="font-bold text-gray-800 mb-1">Email</h3>
                         <p className="text-sm text-gray-600 mb-2">Our friendly team is here to help.</p>
-                        <a href="mailto:support@castledepots.co.ke" className="text-brand-blue font-bold hover:underline">support@castledepots.co.ke</a>
+                        <a href="mailto:castledepotsmail@gmail.com" className="text-brand-blue font-bold hover:underline">castledepotsmail@gmail.com</a>
                     </div>
                 </div>
 
@@ -57,7 +57,10 @@ export default function ContactForm() {
                     <div>
                         <h3 className="font-bold text-gray-800 mb-1">Phone</h3>
                         <p className="text-sm text-gray-600 mb-2">Mon-Fri from 8am to 5pm.</p>
-                        <a href="tel:+254712345678" className="text-brand-blue font-bold hover:underline">+254 712 345 678</a>
+                        <div className="flex flex-col">
+                            <a href="tel:0700578820" className="text-brand-blue font-bold hover:underline">0700578820</a>
+                            <a href="tel:0111731613" className="text-brand-blue font-bold hover:underline">0111731613</a>
+                        </div>
                     </div>
                 </div>
 
