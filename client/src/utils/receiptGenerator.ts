@@ -26,7 +26,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     const pdf = new jsPDF();
 
     // Generate QR Code
-    const qrCodeData = await QRCode.toDataURL(`https://castle-depots.vercel.app/track-order?id=${order.id}`, {
+    const qrCodeData = await QRCode.toDataURL(`https://castledepots.com/track-order?id=${order.id}`, {
         width: 100,
         margin: 1,
     });
@@ -61,7 +61,7 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Premium Quality Products for Your Lifestyle', 105, 42, { align: 'center' });
-    pdf.text('www.castledepots.co.ke | castledepotsmail@gmail.com', 105, 48, { align: 'center' });
+    pdf.text('www.castledepots.com | castledepotsmail@gmail.com', 105, 48, { align: 'center' });
 
     // Receipt Title
     pdf.setTextColor(30, 64, 175);
