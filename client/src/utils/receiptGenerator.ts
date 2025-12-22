@@ -106,7 +106,8 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
     pdf.text('Delivery Address:', 105, 99);
 
     pdf.setFont('helvetica', 'normal');
-    const customerName = pdf.splitTextToSize(order.user || 'N/A', 50);
+    const userName = typeof order.user === 'object' ? (order.user as any).first_name || (order.user as any).username : order.user;
+    const customerName = pdf.splitTextToSize(userName || 'N/A', 50);
     pdf.text(customerName, 140, 83);
     pdf.text(order.status.replace('_', ' ').toUpperCase(), 140, 91);
 
