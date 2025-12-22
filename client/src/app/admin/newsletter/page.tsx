@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/api";
 import { Send, Loader2 } from "lucide-react";
+import { Editor } from '@tinymce/tinymce-react';
 
 export default function NewsletterPage() {
     const [subject, setSubject] = useState("");
@@ -56,13 +57,27 @@ export default function NewsletterPage() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Message Content (HTML)</label>
                         <p className="text-xs text-gray-500 mb-2">Basic HTML tags supported: &lt;p&gt;, &lt;b&gt;, &lt;br&gt;, etc.</p>
-                        <textarea
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none h-64 font-mono text-sm"
-                            placeholder="<p>Hello valued customer,</p>..."
-                            required
-                        />
+                        <div className="border border-gray-200 rounded-lg overflow-hidden">
+                            <Editor
+                                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                                value={message}
+                                onEditorChange={(content) => setMessage(content)}
+                                init={{
+                                    height: 400,
+                                    menubar: true,
+                                    plugins: [
+                                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                                    ],
+                                    toolbar: 'undo redo | blocks | ' +
+                                        'bold italic forecolor | alignleft aligncenter ' +
+                                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                                        'removeformat | help',
+                                    content_style: 'body { font-family:Inter,Helvetica,Arial,sans-serif; font-size:14px }'
+                                }}
+                            />
+                        </div>
                     </div>
 
                     <div className="pt-4 border-t border-gray-100">
