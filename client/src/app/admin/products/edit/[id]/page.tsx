@@ -53,7 +53,7 @@ export default function EditProductPage() {
             try {
                 const [cats, product] = await Promise.all([
                     productService.getCategories(),
-                    productService.getProduct(productId)
+                    productService.getProduct(productId, { raw: true })
                 ]);
                 setCategories(cats);
 

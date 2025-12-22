@@ -47,6 +47,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        
+        # For admin editing, allow bypassing campaign calculations to see raw DB values
+        if self.request.user.is_staff and self.request.query_params.get('raw') == 'true':
+            context['active_campaigns'] = []
+            return context
+
         # Fetch active campaigns once per request to avoid N+1 in serializer
         from apps.campaigns.models import Campaign
         from django.utils import timezone

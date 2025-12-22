@@ -63,8 +63,9 @@ export const productService = {
         return { results: mappedResults, count };
     },
 
-    getProduct: async (id: string) => {
-        const response = await api.get(`/products/${id}/`);
+    getProduct: async (id: string, options?: { raw?: boolean }) => {
+        const params = options?.raw ? { raw: 'true' } : {};
+        const response = await api.get(`/products/${id}/`, { params });
         const p = response.data;
         return {
             ...p,
