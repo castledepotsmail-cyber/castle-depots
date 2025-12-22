@@ -20,11 +20,14 @@ export async function POST(request: Request) {
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST || 'smtp.gmail.com',
             port: parseInt(process.env.EMAIL_PORT || '587'),
-            secure: process.env.EMAIL_USE_TLS === 'true', // true for 465, false for other ports
+            secure: false, // Use TLS (STARTTLS) for port 587
             auth: {
                 user: process.env.EMAIL_HOST_USER,
                 pass: process.env.EMAIL_HOST_PASSWORD,
             },
+            tls: {
+                rejectUnauthorized: false // Helps with some server configurations
+            }
         });
 
         // Send email
