@@ -46,7 +46,7 @@ export default async function ProductDetailsPage({
 }) {
     const { id } = await params;
 
-    const productData = await fetchServerData(`/products/${id}/`, { next: { revalidate: 60 } });
+    const productData = await fetchServerData(`/products/${id}/`, { next: { revalidate: 0 } });
 
     if (!productData) {
         return (
