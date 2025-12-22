@@ -243,7 +243,7 @@ export default function AddProductPage() {
                             <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
                             <div className="border border-gray-200 rounded-lg overflow-hidden">
                                 <Editor
-                                    apiKey="1bxdswsq2mc2wkafla5d8l3i6ve93t1ngrmf85k8j3hru01n"
+                                    apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
                                     value={formData.description}
                                     onEditorChange={(content) => setFormData(prev => ({ ...prev, description: content }))}
                                     init={{
