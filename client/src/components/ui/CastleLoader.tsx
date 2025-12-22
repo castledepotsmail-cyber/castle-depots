@@ -63,7 +63,7 @@ export default function CastleLoader({
 
     if (fullScreen) {
         return (
-            <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-white/5 backdrop-blur-[1px] z-50 flex items-center justify-center">
                 {loaderContent}
             </div>
         );
