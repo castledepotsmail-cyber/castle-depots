@@ -61,9 +61,17 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
         from django.core.management import call_command
         import threading
 
+        import logging
+        logger = logging.getLogger(__name__)
+
         # Run in background to avoid timeout
         def send_task():
-            call_command('send_newsletter', subject, message, test_email=test_email)
+            try:
+                logger.info(f"Starting newsletter blast. Subject: {subject}, Test Email: {test_email}")
+                call_command('send_newsletter', subject, message, test_email=test_email)
+                logger.info("Newsletter blast completed successfully.")
+            except Exception as e:
+                logger.error(f"Newsletter blast failed: {e}")
 
         threading.Thread(target=send_task).start()
 
