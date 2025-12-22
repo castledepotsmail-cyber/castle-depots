@@ -38,6 +38,7 @@ export default function EditProductPage() {
         image_main: "",
         uploaded_images: [] as string[],
         sku: "",
+        slug: "",
         options: [] as ProductOption[]
     });
 
@@ -67,6 +68,7 @@ export default function EditProductPage() {
                     image_main: product.image,
                     uploaded_images: product.images ? product.images.map((img: any) => img.image) : [],
                     sku: product.id,
+                    slug: product.slug,
                     options: product.options || []
                 });
             } catch (error) {
@@ -192,9 +194,22 @@ export default function EditProductPage() {
 
             alert("Product updated successfully!");
             router.push('/admin/products');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to update product", error);
-            alert("Failed to update product.");
+            if (error.response && error.response.data) {
+                const errors = error.response.data;
+                let errorMessage = "Failed to update product:\n";
+                if (typeof errors === 'object') {
+                    Object.entries(errors).forEach(([key, value]) => {
+                        errorMessage += `${key}: ${Array.isArray(value) ? value.join(', ') : value}\n`;
+                    });
+                } else {
+                    errorMessage += String(errors);
+                }
+                alert(errorMessage);
+            } else {
+                alert("Failed to update product.");
+            }
         } finally {
             setSaving(false);
         }
