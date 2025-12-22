@@ -16,17 +16,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        const port = parseInt(process.env.EMAIL_PORT || '587');
+        const secure = port === 465; // true for 465, false for other ports
+
+        console.log(`Configuring email transport: Host=${process.env.EMAIL_HOST || 'smtp.gmail.com'}, Port=${port}, Secure=${secure}`);
+
         // Create transporter
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.EMAIL_PORT || '587'),
-            secure: false, // Use TLS (STARTTLS) for port 587
+            port: port,
+            secure: secure,
             auth: {
                 user: process.env.EMAIL_HOST_USER,
                 pass: process.env.EMAIL_HOST_PASSWORD,
             },
             tls: {
-                rejectUnauthorized: false // Helps with some server configurations
+                rejectUnauthorized: false
             }
         });
 
