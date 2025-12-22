@@ -186,6 +186,15 @@ export default function AdminOrderDetailsPage() {
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-bold text-gray-900">{item.product.name}</h3>
+                                        {item.selected_options && Object.keys(item.selected_options).length > 0 && (
+                                            <div className="flex flex-wrap gap-1 my-1">
+                                                {Object.entries(item.selected_options).map(([key, value]) => (
+                                                    <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                                                        {key}: {String(value)}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         <p className="text-sm text-gray-500">SKU: {item.product.id.slice(0, 8).toUpperCase()}</p>
                                     </div>
                                     <div className="text-right">

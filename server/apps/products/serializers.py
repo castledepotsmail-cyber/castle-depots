@@ -61,7 +61,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'category', 'category_id', 'name', 'slug', 'description', 
                   'price', 'discount_price', 'stock_quantity', 'image_main', 
                   'is_active', 'allow_pod', 'created_at', 'images', 'uploaded_images',
-                  'average_rating', 'review_count', 'reviews']
+                  'average_rating', 'review_count', 'reviews', 'options']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])

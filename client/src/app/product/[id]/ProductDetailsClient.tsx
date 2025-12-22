@@ -8,10 +8,16 @@ import { productService } from "@/services/productService";
 import ProductCard from "@/components/product/ProductCard";
 import Image from "next/image";
 import Link from "next/link";
+import DOMPurify from "dompurify";
 
 interface ProductImage {
     id: string;
     image: string;
+}
+
+interface ProductOption {
+    name: string;
+    values: string[];
 }
 
 interface ProductDetails extends Product {
@@ -26,16 +32,13 @@ interface ProductDetails extends Product {
     reviews?: any[];
     average_rating?: number;
     review_count?: number;
-}
-
-interface ProductDetailsClientProps {
-    product: ProductDetails;
-    relatedProducts: Product[];
+    options?: ProductOption[];
 }
 
 export default function ProductDetailsClient({ product }: { product: ProductDetails }) {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState<string | null>(product.image || null);
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
     const addItem = useCartStore((state) => state.addItem);
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
@@ -44,8 +47,21 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
     const isOutOfStock = product.stock_quantity <= 0;
     const maxQuantity = product.stock_quantity;
 
+    const handleOptionSelect = (optionName: string, value: string) => {
+        setSelectedOptions(prev => ({ ...prev, [optionName]: value }));
+    };
+
     const handleAddToCart = () => {
         if (isOutOfStock) return;
+
+        // Validate Options
+        if (product.options && product.options.length > 0) {
+            const missingOptions = product.options.filter(opt => !selectedOptions[opt.name]);
+            if (missingOptions.length > 0) {
+                alert(`Please select ${missingOptions.map(o => o.name).join(', ')}`);
+                return;
+            }
+        }
 
         if (quantity > product.stock_quantity) {
             alert(`Sorry, only ${product.stock_quantity} items available in stock.`);
@@ -54,7 +70,7 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
 
         let addedCount = 0;
         for (let i = 0; i < quantity; i++) {
-            addItem(product);
+            addItem(product, selectedOptions);
             addedCount++;
         }
 
@@ -76,6 +92,9 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
         ...(product.image ? [{ id: 'main', image: product.image }] : []),
         ...(product.images || [])
     ];
+
+    // Sanitize description
+    const sanitizedDescription = DOMPurify.sanitize(product.description || "");
 
     return (
         <main className="container mx-auto px-4 py-8 flex-grow">
@@ -164,9 +183,35 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
                         )}
                     </div>
 
-                    <p className="text-gray-600 leading-relaxed mb-8">
-                        {product.description || "No description available."}
-                    </p>
+                    {/* Product Options */}
+                    {product.options && product.options.length > 0 && (
+                        <div className="mb-8 space-y-6">
+                            {product.options.map((option) => (
+                                <div key={option.name}>
+                                    <h3 className="font-bold text-gray-800 mb-3">{option.name}</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {option.values.map((val) => (
+                                            <button
+                                                key={val}
+                                                onClick={() => handleOptionSelect(option.name, val)}
+                                                className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${selectedOptions[option.name] === val
+                                                        ? 'border-brand-blue bg-blue-50 text-brand-blue'
+                                                        : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                                    }`}
+                                            >
+                                                {val}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div
+                        className="prose prose-blue max-w-none text-gray-600 leading-relaxed mb-8"
+                        dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+                    />
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-4 mb-8">

@@ -27,6 +27,7 @@ class Product(models.Model):
     image_main = models.CharField(max_length=500)
     is_active = models.BooleanField(default=True)
     allow_pod = models.BooleanField(default=True, help_text="Allow Payment on Delivery")
+    options = models.JSONField(default=list, blank=True, help_text="List of product options (e.g. Size, Color)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

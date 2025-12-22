@@ -128,7 +128,8 @@ export default function CheckoutPage() {
                 delivery_longitude: formData.longitude,
                 items: items.map(item => ({
                     product_id: item.id,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    selected_options: item.selectedOptions || {}
                 })),
                 paystack_ref: reference,
                 is_paid: !!reference
@@ -359,7 +360,7 @@ export default function CheckoutPage() {
                                 <h3 className="font-bold text-lg mb-4">Order Summary</h3>
                                 <div className="space-y-4 max-h-60 overflow-y-auto mb-4 pr-2">
                                     {items.map(item => (
-                                        <div key={item.id} className="flex gap-3 text-sm">
+                                        <div key={item.cartItemId} className="flex gap-3 text-sm">
                                             <div className="w-12 h-12 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden">
                                                 {item.image ? (
                                                     <Image
@@ -374,6 +375,11 @@ export default function CheckoutPage() {
                                             </div>
                                             <div className="flex-grow">
                                                 <p className="font-semibold text-gray-800 line-clamp-1">{item.name}</p>
+                                                {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                                                    <div className="text-xs text-gray-500">
+                                                        {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                                    </div>
+                                                )}
                                                 <p className="text-gray-500">Qty: {item.quantity}</p>
                                             </div>
                                             <p className="font-bold">KES {((item.discountPrice || item.price) * item.quantity).toLocaleString()}</p>

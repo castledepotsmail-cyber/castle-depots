@@ -13,7 +13,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'product_id', 'quantity', 'price']
+        fields = ['id', 'product', 'product_id', 'quantity', 'price', 'selected_options']
         read_only_fields = ['price']
 
 from apps.accounts.serializers import UserSerializer
@@ -55,7 +55,8 @@ class OrderSerializer(serializers.ModelSerializer):
                     order=order, 
                     product=product, 
                     price=product.discount_price if product.discount_price else product.price, 
-                    quantity=item_data['quantity']
+                    quantity=item_data['quantity'],
+                    selected_options=item_data.get('selected_options', {})
                 )
                 
                 # Reduce Stock

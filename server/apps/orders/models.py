@@ -47,6 +47,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2) # Price at time of purchase
+    selected_options = models.JSONField(default=dict, blank=True, help_text="Selected options for this item")
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"

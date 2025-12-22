@@ -7,6 +7,12 @@ import { useState, useEffect, useRef } from "react";
 import { productService, Category } from "@/services/productService";
 import { upload } from '@vercel/blob/client';
 import Image from "next/image";
+import { Editor } from '@tinymce/tinymce-react';
+
+interface ProductOption {
+    name: string;
+    values: string[];
+}
 
 export default function EditProductPage() {
     const params = useParams();
@@ -31,8 +37,14 @@ export default function EditProductPage() {
         allow_pod: true,
         image_main: "",
         uploaded_images: [] as string[],
-        sku: ""
+        sku: "",
+        options: [] as ProductOption[]
     });
+
+    // Option Management State
+    const [newOptionName, setNewOptionName] = useState("");
+    const [newOptionValue, setNewOptionValue] = useState("");
+    const [currentOptionValues, setCurrentOptionValues] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,11 +62,12 @@ export default function EditProductPage() {
                     discount_price: product.discountPrice ? product.discountPrice.toString() : "",
                     stock_quantity: product.stock_quantity.toString(),
                     category: product.category?.id || "",
-                    is_active: product.isActive, // Note: check if API returns isActive or is_active
-                    allow_pod: product.allowPod || true, // Check API field
+                    is_active: product.isActive,
+                    allow_pod: product.allowPod || true,
                     image_main: product.image,
                     uploaded_images: product.images ? product.images.map((img: any) => img.image) : [],
-                    sku: product.id // Using ID as SKU for now if not separate
+                    sku: product.id,
+                    options: product.options || []
                 });
             } catch (error) {
                 console.error("Failed to fetch data", error);
@@ -79,7 +92,11 @@ export default function EditProductPage() {
         const file = e.target.files[0];
         setUploading(true);
         try {
-            const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+            const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`;
+            const newBlob = await upload(uniqueFilename, file, {
+                access: 'public',
+                handleUploadUrl: '/blob-upload',
+            });
             setFormData(prev => ({ ...prev, image_main: newBlob.url }));
         } catch (error) {
             console.error("Upload failed", error);
@@ -96,7 +113,11 @@ export default function EditProductPage() {
         const newUrls: string[] = [];
         try {
             for (const file of files) {
-                const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+                const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`;
+                const newBlob = await upload(uniqueFilename, file, {
+                    access: 'public',
+                    handleUploadUrl: '/blob-upload',
+                });
                 newUrls.push(newBlob.url);
             }
             setFormData(prev => ({ ...prev, uploaded_images: [...prev.uploaded_images, ...newUrls] }));
@@ -115,6 +136,38 @@ export default function EditProductPage() {
         }));
     };
 
+    // Option Management Functions
+    const addOptionValue = () => {
+        if (newOptionValue.trim()) {
+            setCurrentOptionValues([...currentOptionValues, newOptionValue.trim()]);
+            setNewOptionValue("");
+        }
+    };
+
+    const removeOptionValue = (index: number) => {
+        setCurrentOptionValues(currentOptionValues.filter((_, i) => i !== index));
+    };
+
+    const addOption = () => {
+        if (newOptionName.trim() && currentOptionValues.length > 0) {
+            setFormData(prev => ({
+                ...prev,
+                options: [...prev.options, { name: newOptionName.trim(), values: currentOptionValues }]
+            }));
+            setNewOptionName("");
+            setCurrentOptionValues([]);
+        } else {
+            alert("Please provide an option name and at least one value.");
+        }
+    };
+
+    const removeOption = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            options: prev.options.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleSubmit = async () => {
         if (!formData.name || !formData.price || !formData.category) {
             alert("Please fill in all required fields.");
@@ -129,7 +182,8 @@ export default function EditProductPage() {
                 discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
                 stock_quantity: parseInt(formData.stock_quantity) || 0,
                 category_id: formData.category,
-                uploaded_images: formData.uploaded_images
+                uploaded_images: formData.uploaded_images,
+                options: formData.options
             };
 
             // Using direct API call for update as productService might not have update method exposed or updated
@@ -163,7 +217,7 @@ export default function EditProductPage() {
     }
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-6 max-w-5xl mx-auto pb-20">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/products" className="p-2 hover:bg-gray-200 rounded-full transition-colors">
@@ -198,12 +252,107 @@ export default function EditProductPage() {
 
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue h-32"
-                            ></textarea>
+                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                <Editor
+                                    apiKey="1bxdswsq2mc2wkafla5d8l3i6ve93t1ngrmf85k8j3hru01n"
+                                    value={formData.description}
+                                    onEditorChange={(content) => setFormData(prev => ({ ...prev, description: content }))}
+                                    init={{
+                                        height: 400,
+                                        menubar: true,
+                                        plugins: [
+                                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                                        ],
+                                        toolbar: 'undo redo | blocks | ' +
+                                            'bold italic forecolor | alignleft aligncenter ' +
+                                            'alignright alignjustify | bullist numlist outdent indent | ' +
+                                            'removeformat | help',
+                                        content_style: 'body { font-family:Inter,Helvetica,Arial,sans-serif; font-size:14px }'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                        <h2 className="font-bold text-lg text-gray-800">Product Options (Variants)</h2>
+                        <p className="text-sm text-gray-500">Add options like Size, Color, or Material. These will be required for the customer to select.</p>
+
+                        {/* Existing Options List */}
+                        {formData.options.length > 0 && (
+                            <div className="space-y-3 mb-4">
+                                {formData.options.map((opt, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                        <div>
+                                            <span className="font-bold text-gray-800">{opt.name}:</span>
+                                            <span className="text-gray-600 ml-2">{opt.values.join(', ')}</span>
+                                        </div>
+                                        <button onClick={() => removeOption(idx)} className="text-red-500 hover:text-red-700">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Add New Option Form */}
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1">Option Name (e.g. Size)</label>
+                                <input
+                                    type="text"
+                                    value={newOptionName}
+                                    onChange={(e) => setNewOptionName(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:border-brand-blue"
+                                    placeholder="Size"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1">Option Values (e.g. S, M, L)</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={newOptionValue}
+                                        onChange={(e) => setNewOptionValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                addOptionValue();
+                                            }
+                                        }}
+                                        className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:border-brand-blue"
+                                        placeholder="Type value and press Enter"
+                                    />
+                                    <button
+                                        onClick={addOptionValue}
+                                        type="button"
+                                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 font-bold"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                {/* Values Preview */}
+                                {currentOptionValues.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {currentOptionValues.map((val, idx) => (
+                                            <span key={idx} className="bg-white border border-gray-300 px-2 py-1 rounded text-sm flex items-center gap-1">
+                                                {val}
+                                                <button onClick={() => removeOptionValue(idx)} className="text-red-500 hover:text-red-700"><X size={12} /></button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={addOption}
+                                type="button"
+                                disabled={!newOptionName || currentOptionValues.length === 0}
+                                className="w-full bg-brand-blue text-white py-2 rounded font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Option Type
+                            </button>
                         </div>
                     </div>
 
@@ -370,6 +519,7 @@ export default function EditProductPage() {
                             onChange={handleMainImageUpload}
                             className="hidden"
                             accept="image/*"
+                            multiple={false}
                         />
                     </div>
 
