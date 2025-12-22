@@ -49,7 +49,7 @@ def create_order_notification(sender, instance, created, **kwargs):
                 import traceback
                 logger.error(traceback.format_exc())
 
-        threading.Thread(target=send_placed_email).start()
+        threading.Thread(target=send_placed_email, daemon=True).start()
 
     else:
         # Check if status changed
@@ -100,4 +100,4 @@ def create_order_notification(sender, instance, created, **kwargs):
                     import traceback
                     logger.error(traceback.format_exc())
 
-            threading.Thread(target=send_update_email).start()
+            threading.Thread(target=send_update_email, daemon=True).start()
