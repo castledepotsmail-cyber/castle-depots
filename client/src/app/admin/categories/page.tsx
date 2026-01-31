@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { productService } from "@/services/productService";
 import { Plus, Search, Trash2, Edit } from "lucide-react";
 import Link from "next/link";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminCategoriesPage() {
     const [categories, setCategories] = useState<any[]>([]);
@@ -65,7 +66,14 @@ export default function AdminCategoriesPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {categories.map((cat) => (
+                        {loading ? (
+                            <>
+                                <TableRowSkeleton cols={4} />
+                                <TableRowSkeleton cols={4} />
+                                <TableRowSkeleton cols={4} />
+                                <TableRowSkeleton cols={4} />
+                            </>
+                        ) : categories.map((cat) => (
                             <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="p-4">
                                     <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Search, Edit, Trash2, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { campaignService, Campaign } from "@/services/campaignService";
 import { format } from "date-fns";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminCampaignsPage() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -77,7 +78,11 @@ export default function AdminCampaignsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                <tr><td colSpan={5} className="px-6 py-8 text-center">Loading...</td></tr>
+                                <>
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                </>
                             ) : filteredCampaigns.length === 0 ? (
                                 <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">No campaigns found.</td></tr>
                             ) : (

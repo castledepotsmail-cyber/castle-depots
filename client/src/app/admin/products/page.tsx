@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
-import CastleLoader from "@/components/ui/CastleLoader";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import { useEffect, useState, useCallback } from "react";
 import { productService, Product } from "@/services/productService";
 import Image from "next/image";
@@ -104,11 +104,13 @@ export default function AdminProductsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-12 flex justify-center">
-                                        <CastleLoader size="md" text="Loading Products..." />
-                                    </td>
-                                </tr>
+                                <>
+                                    <TableRowSkeleton cols={6} />
+                                    <TableRowSkeleton cols={6} />
+                                    <TableRowSkeleton cols={6} />
+                                    <TableRowSkeleton cols={6} />
+                                    <TableRowSkeleton cols={6} />
+                                </>
                             ) : products.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">

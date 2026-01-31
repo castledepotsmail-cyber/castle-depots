@@ -3,6 +3,7 @@
 import { Search, Mail, Phone, MoreHorizontal, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminCustomersPage() {
     const [customers, setCustomers] = useState<any[]>([]);
@@ -34,10 +35,6 @@ export default function AdminCustomersPage() {
         (customer.first_name && customer.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (customer.last_name && customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-
-    if (loading && customers.length === 0) {
-        return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto text-brand-blue" /></div>;
-    }
 
     return (
         <div className="space-y-6">
@@ -71,7 +68,15 @@ export default function AdminCustomersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredCustomers.length === 0 ? (
+                            {loading ? (
+                                <>
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                    <TableRowSkeleton cols={5} />
+                                </>
+                            ) : filteredCustomers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                                         No customers found.

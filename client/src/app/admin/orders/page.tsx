@@ -4,6 +4,7 @@ import { Search, Filter, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-
 import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
 import Link from "next/link";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -65,10 +66,6 @@ export default function AdminOrdersPage() {
         return matchesSearch && matchesStatus;
     });
 
-    if (loading && orders.length === 0) {
-        return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto text-brand-blue" /></div>;
-    }
-
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
@@ -114,7 +111,15 @@ export default function AdminOrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {filteredOrders.length === 0 ? (
+                        {loading ? (
+                            <>
+                                <TableRowSkeleton cols={7} />
+                                <TableRowSkeleton cols={7} />
+                                <TableRowSkeleton cols={7} />
+                                <TableRowSkeleton cols={7} />
+                                <TableRowSkeleton cols={7} />
+                            </>
+                        ) : filteredOrders.length === 0 ? (
                             <tr>
                                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                                     No orders found.
