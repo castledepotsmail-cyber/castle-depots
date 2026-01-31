@@ -4,9 +4,11 @@ import { Search, Filter, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-
 import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminOrdersPage() {
+    const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -98,78 +100,87 @@ export default function AdminOrdersPage() {
 
             {/* Orders Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold">Order ID</th>
-                            <th className="px-6 py-4 font-semibold">Customer</th>
-                            <th className="px-6 py-4 font-semibold">Date</th>
-                            <th className="px-6 py-4 font-semibold">Total</th>
-                            <th className="px-6 py-4 font-semibold">Payment</th>
-                            <th className="px-6 py-4 font-semibold">Status</th>
-                            <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <>
-                                <TableRowSkeleton cols={7} />
-                                <TableRowSkeleton cols={7} />
-                                <TableRowSkeleton cols={7} />
-                                <TableRowSkeleton cols={7} />
-                                <TableRowSkeleton cols={7} />
-                            </>
-                        ) : filteredOrders.length === 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
                             <tr>
-                                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                                    No orders found.
-                                </td>
+                                <th className="px-6 py-4 font-semibold">Order ID</th>
+                                <th className="px-6 py-4 font-semibold">Customer</th>
+                                <th className="hidden md:table-cell px-6 py-4 font-semibold">Date</th>
+                                <th className="px-6 py-4 font-semibold">Total</th>
+                                <th className="hidden lg:table-cell px-6 py-4 font-semibold">Payment</th>
+                                <th className="px-6 py-4 font-semibold">Status</th>
+                                <th className="px-6 py-4 font-semibold text-right">Actions</th>
                             </tr>
-                        ) : (
-                            filteredOrders.map((order) => (
-                                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-gray-900">#{order.id.slice(0, 8)}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-gray-800">
-                                                {order.user ? (order.user.first_name ? `${order.user.first_name} ${order.user.last_name}` : order.user.username) : 'Guest'}
-                                            </span>
-                                            <span className="text-xs text-gray-500">{order.user?.email}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4 font-bold text-gray-900">KES {parseFloat(order.total_amount).toLocaleString()}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${order.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                            {order.payment_method === 'pod' ? 'POD' : (order.is_paid ? 'Paid' : 'Pending')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <select
-                                            value={order.status}
-                                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                            className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
-                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
-                                                    'bg-blue-50 text-blue-700'
-                                                }`}
-                                        >
-                                            <option value="placed">Placed</option>
-                                            <option value="processing">Processing</option>
-                                            <option value="shipped">Shipped</option>
-                                            <option value="delivered">Delivered</option>
-                                            <option value="cancelled">Cancelled</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Link href={`/admin/orders/${order.id}`} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors inline-block">
-                                            <Eye size={18} />
-                                        </Link>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {loading ? (
+                                <>
+                                    <TableRowSkeleton cols={7} />
+                                    <TableRowSkeleton cols={7} />
+                                    <TableRowSkeleton cols={7} />
+                                    <TableRowSkeleton cols={7} />
+                                    <TableRowSkeleton cols={7} />
+                                </>
+                            ) : filteredOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                                        No orders found.
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                filteredOrders.map((order) => (
+                                    <tr
+                                        key={order.id}
+                                        onClick={() => router.push(`/admin/orders/${order.id}`)}
+                                        className="hover:bg-gray-50 transition-colors cursor-pointer group"
+                                    >
+                                        <td className="px-6 py-4 font-bold text-gray-900">
+                                            <span className="group-hover:text-brand-blue transition-colors">#{order.id.slice(0, 8)}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-gray-800">
+                                                    {order.user ? (order.user.first_name ? `${order.user.first_name} ${order.user.last_name}` : order.user.username) : 'Guest'}
+                                                </span>
+                                                <span className="text-xs text-gray-500 hidden sm:inline">{order.user?.email}</span>
+                                            </div>
+                                        </td>
+                                        <td className="hidden md:table-cell px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">KES {parseFloat(order.total_amount).toLocaleString()}</td>
+                                        <td className="hidden lg:table-cell px-6 py-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${order.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                {order.payment_method === 'pod' ? 'POD' : (order.is_paid ? 'Paid' : 'Pending')}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <select
+                                                value={order.status}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                                className={`border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-brand-blue font-bold ${order.status === 'delivered' ? 'bg-green-50 text-green-700' :
+                                                    order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                        'bg-blue-50 text-blue-700'
+                                                    }`}
+                                            >
+                                                <option value="placed">Placed</option>
+                                                <option value="processing">Processing</option>
+                                                <option value="shipped">Shipped</option>
+                                                <option value="delivered">Delivered</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="p-2 text-gray-500 group-hover:bg-gray-100 group-hover:text-brand-blue rounded-lg transition-colors inline-block">
+                                                <Eye size={18} />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">

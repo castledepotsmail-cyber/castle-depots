@@ -56,63 +56,65 @@ export default function AdminCategoriesPage() {
                     </div>
                 </div>
 
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-600 font-semibold text-sm">
-                        <tr>
-                            <th className="p-4">Image</th>
-                            <th className="p-4">Name</th>
-                            <th className="p-4">Slug</th>
-                            <th className="p-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <>
-                                <TableRowSkeleton cols={4} />
-                                <TableRowSkeleton cols={4} />
-                                <TableRowSkeleton cols={4} />
-                                <TableRowSkeleton cols={4} />
-                            </>
-                        ) : categories.map((cat) => (
-                            <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="p-4">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
-                                        {cat.image ? (
-                                            <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="p-4 font-medium text-gray-900">{cat.name}</td>
-                                <td className="p-4 text-gray-500">{cat.slug}</td>
-                                <td className="p-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {error && (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-600 font-semibold text-sm">
                             <tr>
-                                <td colSpan={4} className="p-8 text-center text-red-500 bg-red-50">
-                                    <p>{error}</p>
-                                    <button onClick={loadCategories} className="mt-2 text-sm underline font-bold">Retry</button>
-                                </td>
+                                <th className="p-4">Image</th>
+                                <th className="p-4">Name</th>
+                                <th className="p-4">Slug</th>
+                                <th className="p-4 text-right">Actions</th>
                             </tr>
-                        )}
-                        {categories.length === 0 && !loading && !error && (
-                            <tr>
-                                <td colSpan={4} className="p-8 text-center text-gray-500">No categories found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {loading ? (
+                                <>
+                                    <TableRowSkeleton cols={4} />
+                                    <TableRowSkeleton cols={4} />
+                                    <TableRowSkeleton cols={4} />
+                                    <TableRowSkeleton cols={4} />
+                                </>
+                            ) : categories.map((cat) => (
+                                <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="p-4">
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                                            {cat.image ? (
+                                                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 font-medium text-gray-900">{cat.name}</td>
+                                    <td className="p-4 text-gray-500">{cat.slug}</td>
+                                    <td className="p-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
+                                                <Edit size={18} />
+                                            </button>
+                                            <button className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {error && (
+                                <tr>
+                                    <td colSpan={4} className="p-8 text-center text-red-500 bg-red-50">
+                                        <p>{error}</p>
+                                        <button onClick={loadCategories} className="mt-2 text-sm underline font-bold">Retry</button>
+                                    </td>
+                                </tr>
+                            )}
+                            {categories.length === 0 && !loading && !error && (
+                                <tr>
+                                    <td colSpan={4} className="p-8 text-center text-gray-500">No categories found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

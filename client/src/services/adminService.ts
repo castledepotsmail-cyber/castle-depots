@@ -19,6 +19,16 @@ export const adminService = {
         return response.data.results ? response.data : { results: response.data, count: response.data.length };
     },
 
+    getOrder: async (id: string) => {
+        const response = await api.get(`/orders/admin/${id}/`);
+        return response.data;
+    },
+
+    updateOrder: async (id: string, data: any) => {
+        const response = await api.patch(`/orders/admin/${id}/`, data);
+        return response.data;
+    },
+
     updateOrderStatus: async (id: string, status: string) => {
         const response = await api.patch(`/orders/admin/${id}/`, { status });
         return response.data;

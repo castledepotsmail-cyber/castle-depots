@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { orderService } from "@/services/orderService";
+import { adminService } from "@/services/adminService";
 import {
     ArrowLeft, MapPin, Phone, Mail, User, Calendar, CreditCard,
     Package, ExternalLink, Printer, CheckCircle, AlertCircle,
@@ -24,14 +24,28 @@ export default function AdminOrderDetailsPage() {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [isStatusOpen, setIsStatusOpen] = useState(false);
+    const statusDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchOrder();
     }, [orderId]);
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+                setIsStatusOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const fetchOrder = async () => {
         try {
-            const data = await orderService.getOrder(orderId);
+            const data = await adminService.getOrder(orderId);
             setOrder(data);
         } catch (error) {
             console.error("Failed to fetch order", error);
@@ -45,7 +59,7 @@ export default function AdminOrderDetailsPage() {
 
         setUpdating(true);
         try {
-            await orderService.updateOrderStatus(orderId, newStatus);
+            await adminService.updateOrderStatus(orderId, newStatus);
             await fetchOrder(); // Refresh data
             alert("Order status updated successfully.");
         } catch (error) {
@@ -61,9 +75,10 @@ export default function AdminOrderDetailsPage() {
 
         setUpdating(true);
         try {
-            // Using a dummy ref for manual update or create a specific endpoint if needed
-            // For now reusing updateOrderPayment with a manual marker
-            await orderService.updateOrderPayment(orderId, `MANUAL-${Date.now()}`);
+            await adminService.updateOrder(orderId, {
+                is_paid: true,
+                paystack_ref: `MANUAL-ADMIN-${Date.now()}`
+            });
             await fetchOrder();
             alert("Order marked as paid.");
         } catch (error) {
@@ -106,44 +121,52 @@ export default function AdminOrderDetailsPage() {
         : null;
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-0">
             {/* Header / Navigation */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                    <Link href="/admin/orders" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <Link href="/admin/orders" className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
                         <ArrowLeft size={24} className="text-gray-600" />
                     </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <div className="min-w-0">
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex flex-wrap items-center gap-2 md:gap-3">
                             Order #{order.id.slice(0, 8)}
-                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`}>
+                            <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`}>
                                 {order.status.toUpperCase()}
                             </span>
                         </h1>
-                        <p className="text-gray-500 flex items-center gap-2 text-sm mt-1">
+                        <p className="text-gray-500 flex items-center gap-2 text-xs md:text-sm mt-1">
                             <Calendar size={14} />
                             {new Date(order.created_at).toLocaleString()}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="relative group">
-                        <button className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative" ref={statusDropdownRef}>
+                        <button
+                            onClick={() => setIsStatusOpen(!isStatusOpen)}
+                            className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm text-sm"
+                        >
                             Update Status <ChevronDown size={16} />
                         </button>
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden hidden group-hover:block z-50">
-                            {['placed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
-                                <button
-                                    key={status}
-                                    onClick={() => handleStatusUpdate(status)}
-                                    disabled={updating || order.status === status}
-                                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors capitalize ${order.status === status ? 'bg-blue-50 text-brand-blue font-bold' : 'text-gray-700'}`}
-                                >
-                                    {status}
-                                </button>
-                            ))}
-                        </div>
+                        {isStatusOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                                {['placed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                                    <button
+                                        key={status}
+                                        onClick={() => {
+                                            handleStatusUpdate(status);
+                                            setIsStatusOpen(false);
+                                        }}
+                                        disabled={updating || order.status === status}
+                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors capitalize ${order.status === status ? 'bg-blue-50 text-brand-blue font-bold' : 'text-gray-700'}`}
+                                    >
+                                        {status}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <button
@@ -151,9 +174,9 @@ export default function AdminOrderDetailsPage() {
                             const { generateReceipt } = await import("@/utils/receiptGenerator");
                             generateReceipt(order);
                         }}
-                        className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-md"
+                        className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-md text-sm"
                     >
-                        <Printer size={18} /> Print Invoice
+                        <Printer size={18} /> <span className="hidden sm:inline">Print Invoice</span><span className="sm:hidden">Print</span>
                     </button>
                 </div>
             </div>
@@ -184,22 +207,22 @@ export default function AdminOrderDetailsPage() {
                                             <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
                                         )}
                                     </div>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-gray-900">{item.product.name}</h3>
+                                    <div className="flex-grow min-w-0">
+                                        <h3 className="font-bold text-gray-900 truncate">{item.product.name}</h3>
                                         {item.selected_options && Object.keys(item.selected_options).length > 0 && (
                                             <div className="flex flex-wrap gap-1 my-1">
                                                 {Object.entries(item.selected_options).map(([key, value]) => (
-                                                    <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                                                    <span key={key} className="text-[10px] md:text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
                                                         {key}: {String(value)}
                                                     </span>
                                                 ))}
                                             </div>
                                         )}
-                                        <p className="text-sm text-gray-500">SKU: {item.product.sku || item.product.id.slice(0, 8).toUpperCase()}</p>
+                                        <p className="text-xs md:text-sm text-gray-500">SKU: {item.product.sku || item.product.id.slice(0, 8).toUpperCase()}</p>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right flex-shrink-0">
                                         <p className="font-bold text-gray-900">x{item.quantity}</p>
-                                        <p className="text-brand-blue font-bold">KES {parseFloat(item.price).toLocaleString()}</p>
+                                        <p className="text-brand-blue font-bold text-sm md:text-base">KES {parseFloat(item.price).toLocaleString()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -247,7 +270,7 @@ export default function AdminOrderDetailsPage() {
                             {order.paystack_ref && (
                                 <div className="md:col-span-2">
                                     <p className="text-sm text-gray-500 mb-1">Transaction Reference</p>
-                                    <p className="font-mono text-sm bg-gray-100 px-3 py-1 rounded inline-block text-gray-700">
+                                    <p className="font-mono text-sm bg-gray-100 px-3 py-1 rounded inline-block text-gray-700 break-all">
                                         {order.paystack_ref}
                                     </p>
                                 </div>
@@ -268,18 +291,18 @@ export default function AdminOrderDetailsPage() {
                                 <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-brand-blue font-bold">
                                     {order.user?.first_name?.[0] || 'U'}
                                 </div>
-                                <div>
-                                    <p className="font-bold text-gray-900">{order.user?.first_name} {order.user?.last_name}</p>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-gray-900 truncate">{order.user?.first_name} {order.user?.last_name}</p>
                                     <p className="text-xs text-gray-500">Customer</p>
                                 </div>
                             </div>
                             <div className="pt-4 border-t border-gray-50 space-y-3">
-                                <a href={`mailto:${order.user?.email}`} className="flex items-center gap-3 text-gray-600 hover:text-brand-blue transition-colors p-2 hover:bg-gray-50 rounded-lg">
-                                    <Mail size={18} />
-                                    <span className="text-sm">{order.user?.email}</span>
+                                <a href={`mailto:${order.user?.email}`} className="flex items-center gap-3 text-gray-600 hover:text-brand-blue transition-colors p-2 hover:bg-gray-50 rounded-lg truncate block">
+                                    <Mail size={18} className="flex-shrink-0" />
+                                    <span className="text-sm truncate">{order.user?.email}</span>
                                 </a>
                                 <a href={`tel:${order.user?.phone_number}`} className="flex items-center gap-3 text-gray-600 hover:text-brand-blue transition-colors p-2 hover:bg-gray-50 rounded-lg">
-                                    <Phone size={18} />
+                                    <Phone size={18} className="flex-shrink-0" />
                                     <span className="text-sm">{order.user?.phone_number || 'No phone number'}</span>
                                 </a>
                             </div>
