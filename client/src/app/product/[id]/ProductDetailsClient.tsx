@@ -195,8 +195,8 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
                                                 key={val}
                                                 onClick={() => handleOptionSelect(option.name, val)}
                                                 className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${selectedOptions[option.name] === val
-                                                        ? 'border-brand-blue bg-blue-50 text-brand-blue'
-                                                        : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                                    ? 'border-brand-blue bg-blue-50 text-brand-blue'
+                                                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
                                                     }`}
                                             >
                                                 {val}
@@ -270,7 +270,7 @@ export default function ProductDetailsClient({ product }: { product: ProductDeta
                         >
                             <Share2 size={16} /> Share this product
                         </button>
-                        <span>SKU: {product.id.slice(0, 8).toUpperCase()}</span>
+                        <span>SKU: {product.sku || product.id.slice(0, 8).toUpperCase()}</span>
                         <span>Category: {product.category?.name}</span>
                     </div>
                 </div>

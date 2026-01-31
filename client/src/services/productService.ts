@@ -27,6 +27,7 @@ export interface Product {
     average_rating?: number;
     review_count?: number;
     reviews?: any[];
+    sku?: string;
 }
 
 export const productService = {

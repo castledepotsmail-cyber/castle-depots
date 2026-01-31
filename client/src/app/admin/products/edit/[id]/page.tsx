@@ -68,7 +68,7 @@ export default function EditProductPage() {
                     allow_pod: product.allowPod || true,
                     image_main: product.image,
                     uploaded_images: product.images ? product.images.map((img: any) => img.image) : [],
-                    sku: product.id,
+                    sku: product.sku || "",
                     slug: product.slug,
                     options: product.options || []
                 });
@@ -478,7 +478,7 @@ export default function EditProductPage() {
                                     onChange={handleInputChange}
                                     type="text"
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-blue"
-                                    disabled
+                                    placeholder="Auto-generated"
                                 />
                             </div>
                         </div>

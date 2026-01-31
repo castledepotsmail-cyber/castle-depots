@@ -143,7 +143,8 @@ export const generateReceipt = async (order: Order, action: 'download' | 'view' 
         }
 
         // Item name (wrapped if too long)
-        const itemName = pdf.splitTextToSize(item.product.name, 95);
+        const displaySku = (item.product as any).sku || (item.product as any).id?.slice(0, 8).toUpperCase() || '';
+        const itemName = pdf.splitTextToSize(`${item.product.name} ${displaySku ? `(SKU: ${displaySku})` : ''}`, 95);
         pdf.text(itemName, 20, yPos);
 
         pdf.text(item.quantity.toString(), 125, yPos);

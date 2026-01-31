@@ -41,9 +41,23 @@ class Product(models.Model):
             return round(reviews.aggregate(models.Avg('rating'))['rating__avg'], 1)
         return 0
 
-    @property
-    def review_count(self):
-        return self.reviews.count()
+    review_count = property(lambda self: self.reviews.count())
+
+    sku = models.CharField(max_length=50, unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            import random
+            import string
+            while True:
+                # Generate a random SKU like 'SKU-123456'
+                random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                new_sku = f"SKU-{random_string}"
+                if not Product.objects.filter(sku=new_sku).exists():
+                    self.sku = new_sku
+                    break
+        super().save(*args, **kwargs)
+
 
 class ProductImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

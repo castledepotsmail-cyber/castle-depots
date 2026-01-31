@@ -80,6 +80,36 @@ class OrderSerializer(serializers.ModelSerializer):
                 
                 product.save()
                 
+            # 4. Remove items from cart (frontend handles this, but good to know)
+            
+            # 5. Send Email Notification
+            try:
+                from django.core.mail import send_mail
+                from django.template.loader import render_to_string
+                from django.conf import settings
+                from django.contrib.auth import get_user_model
+                
+                # Notify User (existing/default behavior usually separate, but we can do it here if needed)
+                # ...
+                
+                # Notify Admin
+                User = get_user_model()
+                # Assuming superusers or staff are admins to notify
+                admin_emails = User.objects.filter(is_superuser=True).values_list('email', flat=True)
+                
+                if admin_emails:
+                    html_message = render_to_string('email/new_order_admin_notification.html', {'order': order})
+                    send_mail(
+                        subject=f"New Order #{str(order.id)[:8]} Received",
+                        message="", # Plain text fallback (optional)
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=list(admin_emails),
+                        html_message=html_message,
+                        fail_silently=True
+                    )
+            except Exception as e:
+                print(f"Failed to send admin notification email: {e}")
+
             return order
         except serializers.ValidationError as e:
             raise e

@@ -195,7 +195,7 @@ export default function AdminOrderDetailsPage() {
                                                 ))}
                                             </div>
                                         )}
-                                        <p className="text-sm text-gray-500">SKU: {item.product.id.slice(0, 8).toUpperCase()}</p>
+                                        <p className="text-sm text-gray-500">SKU: {item.product.sku || item.product.id.slice(0, 8).toUpperCase()}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-gray-900">x{item.quantity}</p>

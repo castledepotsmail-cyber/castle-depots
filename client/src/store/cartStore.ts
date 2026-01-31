@@ -17,6 +17,7 @@ export interface Product {
     average_rating?: number;
     review_count?: number;
     options?: ProductOption[];
+    sku?: string;
 }
 
 export interface CartItem extends Product {

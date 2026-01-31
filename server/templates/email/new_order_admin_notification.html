@@ -1,0 +1,32 @@
+{% extends 'email/base_email.html' %}
+
+{% block content %}
+<h2>New Order Received: #{{ order.id|stringformat:"s"|slice:":8" }}</h2>
+<p>Hello Admin,</p>
+
+<p>A new order has been placed on the store. Here are the details:</p>
+
+<div style="margin: 20px 0; padding: 15px; background-color: #f8fafc; border-radius: 5px;">
+    <h3>Order Summary</h3>
+    <p><strong>Customer:</strong> {{ order.user.get_full_name|default:order.user.username }} ({{ order.user.email }})
+    </p>
+    <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y g:i A" }}</p>
+    <p><strong>Total Amount:</strong> KES {{ order.total_amount }}</p>
+    <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+    <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+
+    <h4>Items Ordered:</h4>
+    <ul>
+        {% for item in order.items.all %}
+        <li>
+            <strong>{{ item.product.name }}</strong>
+            (SKU: {{ item.product.sku|default:"N/A" }}) - x{{ item.quantity }} @ KES {{ item.price }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<p style="text-align: center;">
+    <a href="https://castledepots.com/admin/orders/{{ order.id }}" class="button">View Order in Admin Dashboard</a>
+</p>
+{% endblock %}
