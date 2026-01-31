@@ -39,7 +39,7 @@ export default function TrackOrderForm() {
             <h1 className="font-display text-3xl font-bold text-gray-800 mb-2">Track Your Order</h1>
             <p className="text-gray-500 mb-8">Enter your Order ID to see the current status.</p>
 
-            <form onSubmit={handleTrack} className="relative mb-6">
+            <form onSubmit={handleTrack} className="relative mb-2">
                 <Search className="absolute top-3.5 left-4 text-gray-400" size={20} />
                 <input
                     type="text"
@@ -57,6 +57,9 @@ export default function TrackOrderForm() {
                     {loading ? <CastleLoader size="sm" /> : <>Track <ArrowRight size={16} /></>}
                 </button>
             </form>
+            <p className="text-xs text-gray-400 mb-6 italic">
+                NB: Please enter the Order ID without the "#" prefix.
+            </p>
 
             {error && (
                 <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3 text-left">
