@@ -235,6 +235,7 @@ export default function OrderDetailsPage() {
                                                 ))}
                                             </div>
                                         )}
+                                        <p className="text-sm text-gray-500">SKU: {item.product.sku || item.product.id.slice(0, 8).toUpperCase()}</p>
                                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                         <p className="font-bold text-brand-blue mt-1">KES {parseFloat(item.price).toLocaleString()}</p>
                                     </div>

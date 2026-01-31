@@ -27,6 +27,28 @@
     <p><strong>Total Amount:</strong> KES {{ order.total_amount }}</p>
     <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
     <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+
+    <h4>Items Ordered:</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+            <tr style="background-color: #e2e8f0; text-align: left;">
+                <th style="padding: 8px; border: 1px solid #cbd5e1;">Item</th>
+                <th style="padding: 8px; border: 1px solid #cbd5e1;">SKU</th>
+                <th style="padding: 8px; border: 1px solid #cbd5e1;">Qty</th>
+                <th style="padding: 8px; border: 1px solid #cbd5e1;">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td style="padding: 8px; border: 1px solid #cbd5e1;">{{ item.product.name }}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1;">{{ item.product.sku|default:"-" }}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1;">{{ item.quantity }}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1;">{{ item.price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 <p style="text-align: center;">
