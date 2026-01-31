@@ -156,7 +156,10 @@ export default function CheckoutPage() {
         email: formData.email,
         amount: finalTotal * 100, // Paystack expects amount in kobo/cents
         currency: 'KES',
-        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_1867c5794041877b51043f44775ebc1d50b3a462',
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_LIVE_PUBLIC_KEY ||
+            process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY ||
+            process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ||
+            'pk_test_1867c5794041877b51043f44775ebc1d50b3a462',
     };
 
     if (items.length === 0 && step !== 3) {
