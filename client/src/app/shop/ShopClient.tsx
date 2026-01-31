@@ -2,7 +2,7 @@
 
 import ProductCard from "@/components/product/ProductCard";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { productService } from "@/services/productService";
 import { Product } from "@/store/cartStore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -26,6 +26,22 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [sortBy, setSortBy] = useState("-created_at");
+
+    // Sort Dropdown State
+    const [isSortOpen, setIsSortOpen] = useState(false);
+    const sortMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+                setIsSortOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // We only fetch client-side if filters change. 
     // Initial load is handled by server.
@@ -191,15 +207,35 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
                     </div>
 
                     <div className="flex gap-4">
-                        <div className="relative group">
-                            <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-brand-blue transition-colors text-sm font-semibold text-gray-700">
+                        <div className="relative" ref={sortMenuRef}>
+                            <button
+                                onClick={() => setIsSortOpen(!isSortOpen)}
+                                className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-brand-blue transition-colors text-sm font-semibold text-gray-700"
+                            >
                                 Sort by: {sortBy === '-created_at' ? 'Newest' : sortBy === 'price' ? 'Price: Low to High' : 'Price: High to Low'} <ChevronDown size={16} />
                             </button>
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 hidden group-hover:block z-20">
-                                <button onClick={() => setSortBy('-created_at')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm">Newest</button>
-                                <button onClick={() => setSortBy('price')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm">Price: Low to High</button>
-                                <button onClick={() => setSortBy('-price')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm">Price: High to Low</button>
-                            </div>
+                            {isSortOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-20">
+                                    <button
+                                        onClick={() => { setSortBy('-created_at'); setIsSortOpen(false); }}
+                                        className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                                    >
+                                        Newest
+                                    </button>
+                                    <button
+                                        onClick={() => { setSortBy('price'); setIsSortOpen(false); }}
+                                        className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                                    >
+                                        Price: Low to High
+                                    </button>
+                                    <button
+                                        onClick={() => { setSortBy('-price'); setIsSortOpen(false); }}
+                                        className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                                    >
+                                        Price: High to Low
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
